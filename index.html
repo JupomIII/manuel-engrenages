@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manuel interactif — Engrenages</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Manuel interactif — Engrenages</h1>
+    <p class="sub">Calculs de base à partir de la table <code>table_engrenages.csv</code></p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Engrenage droit</h2>
+      <form id="gear-form" autocomplete="off">
+        <label for="dp">Pas diamétral (P)
+          <input id="dp" name="dp" type="number" step="any" min="0" list="dp-list" required>
+        </label>
+        <datalist id="dp-list"></datalist>
+
+        <label for="teeth">Nombre de dents (N)
+          <input id="teeth" name="teeth" type="number" step="1" min="1" required>
+        </label>
+
+        <div class="actions">
+          <button type="submit">Calculer</button>
+          <button type="button" id="reset" class="ghost">Réinitialiser</button>
+        </div>
+      </form>
+
+      <p id="message" class="message" hidden></p>
+
+      <div id="results" hidden>
+        <h3>Résultats <span class="unit">(cotes en pouces, module en mm)</span></h3>
+        <table class="grid" id="results-table"></table>
+        <div id="table-match" hidden>
+          <h4>Valeurs de la table</h4>
+          <table class="grid" id="match-table"></table>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Données de référence</h2>
+      <p id="csv-status">Chargement…</p>
+      <details>
+        <summary>Voir la table</summary>
+        <div class="table-wrap">
+          <table class="grid" id="pitch-table"></table>
+        </div>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>Historique</h2>
+      <p id="history-status">Aucun calcul enregistré.</p>
+      <div class="table-wrap">
+        <table class="grid" id="history-table"></table>
+      </div>
+      <div class="actions">
+        <button type="button" id="export">Exporter en CSV</button>
+        <button type="button" id="clear" class="ghost">Vider</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Site statique — aucune donnée n'est envoyée sur un serveur. Les calculs sont conservés dans le navigateur (localStorage).</p>
+  </footer>
+
+  <script src="calculs.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
