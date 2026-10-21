@@ -49,14 +49,14 @@
 
   function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, function (ch) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[ch];
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
     });
   }
 
   function csvCell(value) {
     var text = value === null || value === undefined ? "" : String(value);
-    if (/[\",;\r\n]/.test(text)) {
-      return "\"" + text.replace(/"/g, "\"\"") + "\"";
+    if (/[",;\r\n]/.test(text)) {
+      return '"' + text.replace(/"/g, '""') + '"';
     }
     return text;
   }
