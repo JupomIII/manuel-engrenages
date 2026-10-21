@@ -40,12 +40,49 @@
           <h4>Valeurs de la table</h4>
           <table class="grid" id="match-table"></table>
         </div>
+        <div class="actions">
+          <button type="button" id="export-result" class="ghost">Exporter ce résultat (CSV)</button>
+        </div>
       </div>
+    </section>
+
+    <section class="card">
+      <h2>Train d'engrenages (19 items)</h2>
+      <form id="train-form" autocomplete="off">
+        <label for="mg">Rapport de transmission (mG)
+          <input id="mg" name="mg" type="number" step="any" min="0" required>
+        </label>
+        <label for="centre">Entraxe C (pouces)
+          <input id="centre" name="centre" type="number" step="any" min="0" required>
+        </label>
+        <label for="train-dp">Pas diamétral (P)
+          <input id="train-dp" name="train-dp" type="number" step="any" min="0" required>
+        </label>
+        <label for="angle">Angle de pression
+          <select id="angle" name="angle">
+            <option value="14.5">14,5°</option>
+            <option value="20">20°</option>
+          </select>
+        </label>
+        <div class="actions">
+          <button type="submit">Calculer le train</button>
+        </div>
+      </form>
+      <p id="train-message" class="message" hidden></p>
+      <div id="train-results" hidden>
+        <table class="grid" id="train-table"></table>
+      </div>
+      <figure class="nomenclature">
+        <div id="nomenclature-svg"></div>
+        <figcaption>Nomenclature des dents d'engrenage (Table 1, p. 2212) : cliquer un terme</figcaption>
+      </figure>
+      <p id="term-formula" class="message"></p>
     </section>
 
     <section class="card">
       <h2>Données de référence</h2>
       <p id="csv-status">Chargement…</p>
+      <p><label>Table utilisée : <select id="table-select"></select></label></p>
       <details>
         <summary>Voir la table</summary>
         <div class="table-wrap">
@@ -67,11 +104,41 @@
     </section>
   </main>
 
+  <aside class="card ocr-panel" hidden>
+    <h2>Table depuis une image</h2>
+    <p class="sub">Colle une capture (Ctrl+V), glisse une image ou choisis un fichier. La lecture se fait dans ton navigateur.</p>
+    <div id="ocr-drop" class="drop" tabindex="0">Colle ou dépose une image ici</div>
+    <input id="ocr-file" type="file" accept="image/*" class="file">
+    <div id="ocr-preview" class="ocr-preview" hidden></div>
+    <div class="actions">
+      <button type="button" id="ocr-rotate-left" class="ghost">⟲ 90°</button>
+      <button type="button" id="ocr-rotate-right" class="ghost">⟳ 90°</button>
+      <button type="button" id="ocr-run">Lire le tableau</button>
+    </div>
+    <p id="ocr-status" class="message" hidden></p>
+    <div id="ocr-grid-wrap" hidden>
+      <h3>Aperçu (modifiable)</h3>
+      <div class="table-wrap">
+        <table class="grid editable" id="ocr-grid"></table>
+      </div>
+      <div class="actions">
+        <button type="button" id="ocr-save-tables">Enregistrer dans tables/</button>
+        <button type="button" id="ocr-csv" class="ghost">Télécharger le CSV</button>
+        <button type="button" id="ocr-clear" class="ghost">Effacer</button>
+      </div>
+    </div>
+  </aside>
+
   <footer>
     <p>Site statique — aucune donnée n'est envoyée sur un serveur. Les calculs sont conservés dans le navigateur (localStorage).</p>
   </footer>
 
   <script src="calculs.js"></script>
+  <script src="tables_embedded.js"></script>
   <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="ocr_table.js"></script>
+  <script src="ocr.js"></script>
+  <script src="nomenclature.js"></script>
 </body>
 </html>

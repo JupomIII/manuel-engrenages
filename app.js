@@ -5,7 +5,7 @@
 (function () {
   "use strict";
 
-  var CSV_PATH = "table_engrenages.csv";
+  var CSV_PATH = "tables/Table 3. Gear Tooth Parts for American National Standard Coarse Pitch.csv";
   var STORAGE_KEY = "engrenages.historique.v1";
 
   var els = {
@@ -19,6 +19,8 @@
     match: document.getElementById("table-match"),
     matchTable: document.getElementById("match-table"),
     csvStatus: document.getElementById("csv-status"),
+    tableSelect: document.getElementById("table-select"),
+    exportResultBtn: document.getElementById("export-result"),
     pitchTable: document.getElementById("pitch-table"),
     historyStatus: document.getElementById("history-status"),
     historyTable: document.getElementById("history-table"),
@@ -30,7 +32,9 @@
   var state = {
     headers: [],
     rows: [],       // cellules dans l'ordre du fichier
-    history: []
+    history: [],
+    last: null      // dernier résultat affiché, pour l'export
+
   };
 
   // ---------- utilitaires ----------
@@ -121,24 +125,62 @@
     els.dpList.innerHTML = options;
   }
 
-  async function loadReference() {
+  async function loadReference(path) {
+    path = path || CSV_PATH;
     try {
-      var response = await fetch(CSV_PATH, { cache: "no-cache" });
-      if (!response.ok) throw new Error("HTTP " + response.status);
-      var parsed = parseCsv(await response.text());
+      var text;
+      try {
+        var response = await fetch(path, { cache: "no-cache" });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        text = await response.text();
+      } catch (fetchError) {
+        // Page ouverte sans serveur local : on utilise la copie intégrée.
+        if (!(window.EMBEDDED_TABLES && window.EMBEDDED_TABLES[path])) throw fetchError;
+        text = window.EMBEDDED_TABLES[path];
+      }
+      var parsed = parseCsv(text);
       if (parsed.rows.length === 0) throw new Error("fichier vide");
 
       state.headers = parsed.headers;
       state.rows = parsed.rows;
       els.csvStatus.className = "";
-      els.csvStatus.textContent = parsed.rows.length + " lignes chargées depuis " + CSV_PATH + ".";
+      els.csvStatus.textContent = parsed.rows.length + " lignes chargées depuis " + path + ".";
       renderReferenceTable();
       fillPitchOptions();
     } catch (error) {
       els.csvStatus.className = "message error";
-      els.csvStatus.textContent = "Impossible de charger " + CSV_PATH + " (" + error.message + "). " +
+      els.csvStatus.textContent = "Impossible de charger " + path + " (" + error.message + "). " +
         "Le fichier doit être servi par un serveur local (python -m http.server) ou par GitHub Pages.";
     }
+  }
+
+  // Tables enregistrées depuis le panneau OCR (dossier tables/, listées dans tables/index.json).
+  // Liste = tables/registry.json (tables déclarées) + tables/index.json (tables enregistrées), sans doublon.
+  async function loadTableList() {
+    var files = [];
+    var sources = ["tables/registry.json", "tables/index.json"];
+    for (var s = 0; s < sources.length; s++) {
+      try {
+        var response = await fetch(sources[s], { cache: "no-cache" });
+        if (!response.ok) continue;
+        var entries = await response.json();
+        entries.forEach(function (entry) {
+          if (entry.file && files.indexOf(entry.file) < 0) files.push(entry.file);
+        });
+      } catch (error) {
+        // Source absente : on continue avec les autres.
+      }
+    }
+    var options = "";
+    files.forEach(function (file) {
+      var path = "tables/" + file;
+      options += '<option value="' + escapeHtml(path) + '">' + escapeHtml(path) + "</option>";
+    });
+    if (!options) options = '<option value="' + escapeHtml(CSV_PATH) + '">' + escapeHtml(CSV_PATH) + "</option>";
+    els.tableSelect.innerHTML = options;
+    els.tableSelect.addEventListener("change", function () {
+      loadReference(els.tableSelect.value);
+    });
   }
 
   // ---------- calculs ----------
@@ -177,6 +219,8 @@
         '</td><td class="unit">' + line[2] + "</td></tr>";
     }).join("") + "</tbody>";
 
+    state.last = { lines: lines, tableRow: tableRow };
+
     if (tableRow) {
       var rowsHtml = "";
       for (var i = 2; i < state.headers.length; i++) {
@@ -214,6 +258,9 @@
     var gear = Calculs.gearSpur(P, N);
     var tableRow = findTableRow(P);
     renderResults(gear, tableRow);
+    if (!tableRow) {
+      setMessage("Pas de valeurs de table pour P = " + fmt(P) + " : les cotes sont calculées, mais les valeurs de table sont absentes.", "");
+    }
     addHistory(gear);
   }
 
@@ -303,6 +350,33 @@
     URL.revokeObjectURL(url);
   }
 
+  // Exporte le résultat affiché : cotes calculées puis valeurs de la table (si trouvées).
+  function exportResult() {
+    var last = state.last;
+    if (!last) return;
+    var rows = [["Paramètre", "Valeur", "Unité"]];
+    last.lines.forEach(function (line) { rows.push([line[0], line[1], line[2]]); });
+    rows.push([]);
+    if (last.tableRow) {
+      rows.push(["Valeurs de la table", "", ""]);
+      for (var i = 2; i < state.headers.length; i++) {
+        rows.push([state.headers[i], last.tableRow[i], ""]);
+      }
+    } else {
+      rows.push(["Valeurs de la table", "absentes pour ce pas", ""]);
+    }
+    var text = rows.map(function (row) { return row.map(csvCell).join(","); }).join("\r\n") + "\r\n";
+    var blob = new Blob(["\uFEFF" + text], { type: "text/csv;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = "resultat_engrenage.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
   function clearHistory() {
     if (state.history.length === 0) return;
     if (!window.confirm("Vider l'historique des calculs ?")) return;
@@ -311,8 +385,61 @@
     renderHistory();
   }
 
+  // ---------- train de deux roues ----------
+
+  var ITEMS = [
+    ["Nombre de dents (N)", "teeth", 0],
+    ["Diamètre extérieur D0", "outsideDiameter", 4],
+    ["Addendum a", "addendum", 4],
+    ["Dédendum b", "dedendum", 4],
+    ["Profondeur totale ht", "wholeDepth", 4],
+    ["Pas circulaire p", "circularPitch", 4],
+    ["Épaisseur d'arc t", "toothThickness", 4],
+    ["Épaisseur à la corde T", "chordalThickness", 4],
+    ["Saillie à la corde H", "chordalAddendum", 4],
+    ["Numéro de fraise", "cutter", 0],
+    ["Diamètre de pige", "pinDiameter", 4],
+    ["Mesure sur piges M", "pinMeasurement", 4],
+    ["M maxi (Mth − 3M)", "pinMaxThinned", 4],
+    ["M mini (Mth − 5M)", "pinMinThinned", 4],
+    ["Nombre de dents enjambées k", "overTeeth", 0],
+    ["Mesure entre dents", "overTeethMeasurement", 4]
+  ];
+
+  function computeTrain(event) {
+    event.preventDefault();
+    var mG = num(document.getElementById("mg").value);
+    var C = num(document.getElementById("centre").value);
+    var P = num(document.getElementById("train-dp").value);
+    var angle = parseFloat(document.getElementById("angle").value);
+    var msg = document.getElementById("train-message");
+    var box = document.getElementById("train-results");
+    var result = (mG > 0 && C > 0 && P > 0) ? Calculs.calculateTrain(mG, C, P, angle) : { ok: false, error: "Entre des valeurs positives." };
+    if (!result.ok) {
+      msg.textContent = result.error;
+      msg.hidden = false;
+      msg.className = "message error";
+      box.hidden = true;
+      return;
+    }
+    msg.hidden = true;
+    var html = "<thead><tr><th>Item</th><th>Pignon</th><th>Roue</th></tr></thead><tbody>";
+    html += "<tr><td>Diamètre primitif (pouce)</td><td>" + fmt(result.pinionPitchDiameter) + "</td><td>" + fmt(result.gearPitchDiameter) + "</td></tr>";
+    ITEMS.forEach(function (item) {
+      html += "<tr><td>" + item[0] + "</td><td>" + fmtItem(result.pinion[item[1]], item[2]) + "</td><td>" + fmtItem(result.gear[item[1]], item[2]) + "</td></tr>";
+    });
+    html += "</tbody>";
+    document.getElementById("train-table").innerHTML = html;
+    box.hidden = false;
+  }
+
+  function fmtItem(value, digits) {
+    return digits === 0 ? String(value) : fmt(value, digits);
+  }
+
   // ---------- démarrage ----------
 
+  document.getElementById("train-form").addEventListener("submit", computeTrain);
   els.form.addEventListener("submit", compute);
 
   els.resetBtn.addEventListener("click", function () {
@@ -322,8 +449,10 @@
   });
 
   els.exportBtn.addEventListener("click", exportHistory);
+  els.exportResultBtn.addEventListener("click", exportResult);
   els.clearBtn.addEventListener("click", clearHistory);
 
   loadHistory();
   loadReference();
+  loadTableList();
 })();

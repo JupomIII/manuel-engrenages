@@ -145,7 +145,84 @@ details summary {
   margin-bottom: .5rem;
 }
 
+.ocr-panel .sub {
+  margin: 0 0 .75rem;
+}
+
+.ocr-panel .drop {
+  border: 2px dashed var(--line);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: .9rem;
+  cursor: pointer;
+}
+
+.ocr-panel .drop:focus,
+.ocr-panel .drop.over {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.ocr-panel .file {
+  margin: .75rem 0;
+  font-size: .85rem;
+  max-width: 100%;
+}
+
+.ocr-preview {
+  margin-top: .5rem;
+}
+
+.ocr-preview canvas {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+}
+
+table.grid.editable td[contenteditable] {
+  min-width: 3rem;
+}
+
+table.grid.editable td[contenteditable]:focus {
+  outline: 2px solid var(--accent);
+  background: #fff8e1;
+}
+
+@media (min-width: 1100px) {
+  body {
+    padding-right: 420px;
+  }
+
+  .ocr-panel {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 380px;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    margin: 0;
+  }
+}
+
 footer {
   color: var(--muted);
   font-size: .8rem;
 }
+
+/* Image de nomenclature : fond blanc, centr�e sous le tableau. */
+.nomenclature { margin: 1rem 0 0; text-align: center; }
+.nomenclature img { max-width: 100%; height: auto; background: #fff; }
+.nomenclature figcaption { font-size: 0.9rem; color: #555; }
+.nomenclature-svg { width: 100%; max-width: 480px; height: auto; background: #fff; }
+.nomenclature-svg .gear-body { fill: #fff; stroke: #222; stroke-width: 1.5; }
+.nomenclature-svg .guide { fill: none; stroke: #222; stroke-width: 1; }
+.nomenclature-svg .dashed { stroke-dasharray: 6 4; }
+.nomenclature-svg .axis { stroke: #888; stroke-width: 0.8; stroke-dasharray: 10 3 2 3; }
+.nomenclature-svg .leader { stroke: #444; stroke-width: 0.8; }
+.nomenclature-svg .term { cursor: pointer; }
+.nomenclature-svg .term-text { font-size: 12px; fill: #1a4f8a; text-decoration: underline; }
+.nomenclature-svg .term:hover .term-text, .nomenclature-svg .term:focus .term-text { fill: #c0392b; }
+#term-formula { text-align: center; min-height: 1.5em; }
+.ocr-panel[hidden] { display: none; }
