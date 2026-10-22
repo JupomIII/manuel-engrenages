@@ -7,27 +7,49 @@
   "use strict";
 
   /*
-   * Engrenage droit à denture commune, pleine profondeur.
-   * Toutes les cotes sont en pouces, le pas diamétral P est en 1/pouce.
-   * Le creux dépend de l'angle de pression (guide §4.3) : 1,157/P à 14½°, 1,250/P à 20°.
+   * Proportions de dent (guide §4.2-4.3) : le guide énumère quatre facteurs
+   * qui font varier la denture — l'angle de pression, la finition (arasée ou
+   * rectifiée), la forme de denture (trapue/stub) et la finesse du pas.
+   *   denture commune : a = 1/P ; b = 1,157/P (14½°), 1,250/P (20°),
+   *                     1,350/P si la dent est arasée ou rectifiée (20°) ;
+   *   denture trapue   : a = 0,8/P et b = 1,000/P (denture américaine stub).
+   * options = { stub: true, shaved: true } ; shaved ne s'applique qu'à 20°.
    */
-  function gearSpur(diametralPitch, teeth, pressureAngleDeg) {
+  function toothProportions(pressureAngleDeg, options) {
+    var angle = pressureAngleDeg === 14.5 ? 14.5 : 20;
+    var stub = !!(options && options.stub);
+    var shaved = !!(options && options.shaved) && !stub && angle === 20;
+    return {
+      angle: angle,
+      stub: stub,
+      shaved: shaved,
+      addendumFactor: stub ? 0.8 : 1,
+      dedendumFactor: stub ? 1 : (angle === 14.5 ? 1.157 : (shaved ? 1.35 : 1.25))
+    };
+  }
+
+  /*
+   * Engrenage droit. Toutes les cotes sont en pouces, le pas diamétral P est en 1/pouce.
+   * La saillie et le creux suivent toothProportions (pleine profondeur ou trapue).
+   */
+  function gearSpur(diametralPitch, teeth, pressureAngleDeg, options) {
     var P = diametralPitch;
     var N = teeth;
-    var angle = pressureAngleDeg === 14.5 ? 14.5 : 20;
+    var props = toothProportions(pressureAngleDeg, options);
     var circularPitch = Math.PI / P;
-    var addendum = 1 / P;
-    var dedendum = (angle === 14.5 ? 1.157 : 1.25) / P;
+    var addendum = props.addendumFactor / P;
+    var dedendum = props.dedendumFactor / P;
     var pitchDiameter = N / P;
 
     return {
       diametralPitch: P,
       teeth: N,
-      pressureAngle: angle,
+      pressureAngle: props.angle,
+      toothForm: props,
       circularPitch: circularPitch,
       module: 25.4 / P,
       pitchDiameter: pitchDiameter,
-      outsideDiameter: (N + 2) / P,
+      outsideDiameter: pitchDiameter + 2 * addendum,
       rootDiameter: pitchDiameter - 2 * dedendum,
       addendum: addendum,
       dedendum: dedendum,
@@ -39,20 +61,21 @@
 
   /*
    * Cotes selon le guide de calculs (formules 5 à 9) pour un angle de pression donné.
-   * Angle 14,5° : creux 1,157/P ; angle 20° : creux 1,250/P.
+   * La saillie a et le creux b suivent toothProportions (denture commune ou trapue).
    * Épaisseur (T) et saillie à la corde (H) en pouces.
    */
-  function gearChordal(diametralPitch, teeth, pressureAngleDeg) {
+  function gearChordal(diametralPitch, teeth, pressureAngleDeg, options) {
     var P = diametralPitch;
     var N = teeth;
-    var dedendumFactor = pressureAngleDeg === 14.5 ? 1.157 : 1.25;
+    var props = toothProportions(pressureAngleDeg, options);
     var half = (90 / N) * Math.PI / 180;
     var pitchDiameter = N / P;
-    var addendum = 1 / P;
+    var addendum = props.addendumFactor / P;
     return {
-      pressureAngle: pressureAngleDeg,
+      pressureAngle: props.angle,
+      toothForm: props,
       addendum: addendum,
-      dedendum: dedendumFactor / P,
+      dedendum: props.dedendumFactor / P,
       chordalThickness: pitchDiameter * Math.sin(half),
       chordalAddendum: addendum + (pitchDiameter / 2) * (1 - Math.cos(half))
     };
@@ -140,15 +163,16 @@
   }
 
   // Cotes d'une roue (item 1 à 19 du guide, sauf les lignes du train).
-  function gearItems(P, N, angle) {
-    var chordal = gearChordal(P, N, angle);
+  function gearItems(P, N, angle, options) {
+    var chordal = gearChordal(P, N, angle, options);
     var p = Math.PI / P;
     var pin = 1.728 / P;
     var mth = pinMeasurement(P, N, angle, 0);
     var dm = deltaM(P, N, angle);
     return {
       teeth: N,
-      outsideDiameter: (N + 2) / P,
+      outsideDiameter: N / P + 2 * chordal.addendum,
+      toothForm: chordal.toothForm,
       addendum: chordal.addendum,
       dedendum: chordal.dedendum,
       wholeDepth: chordal.addendum + chordal.dedendum,
@@ -175,7 +199,7 @@
    * Train à deux roues : rapport mG, entraxe C (pouces), pas diamétral P, angle de pression.
    * Renvoie { ok: false, error } si le nombre de dents n'est pas entier.
    */
-  function calculateTrain(mG, C, P, angle) {
+  function calculateTrain(mG, C, P, angle, options) {
     var NP = 2 * C * P / (mG + 1);
     var NG = mG * NP;
     if (Math.abs(NP - Math.round(NP)) > 1e-6 || Math.abs(NG - Math.round(NG)) > 1e-6) {
@@ -189,12 +213,13 @@
       centerDistance: C,
       diametralPitch: P,
       pressureAngle: angle,
+      proportions: toothProportions(angle, options),
       pinionTeeth: NP,
       gearTeeth: NG,
       pinionPitchDiameter: NP / P,
       gearPitchDiameter: NG / P,
-      pinion: gearItems(P, NP, angle),
-      gear: gearItems(P, NG, angle)
+      pinion: gearItems(P, NP, angle, options),
+      gear: gearItems(P, NG, angle, options)
     };
   }
 
@@ -207,6 +232,7 @@
   }
 
   global.Calculs = {
+    toothProportions: toothProportions,
     gearSpur: gearSpur,
     gearChordal: gearChordal,
     gearItems: gearItems,

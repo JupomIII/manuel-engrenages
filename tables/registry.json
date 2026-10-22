@@ -69,12 +69,17 @@
         "rows": [
           {
             "label": "Diamètre extérieur",
-            "when": "Avant la taille : diamètre de la pièce à tourner, D_0 = (N + 2)/P.",
+            "when": "Avant la taille : diamètre de la pièce à tourner. (N + 2)/P en pleine profondeur, (N + 1,6)/P en denture trapue.",
             "variants": [
               {
                 "display": "D_0 = (N + 2) / P",
                 "tex": "D_0=\\dfrac{N+2}{P}",
                 "expr": "(N + 2) / P"
+              },
+              {
+                "display": "D_0 = (N + 1,6) / P (trapue)",
+                "tex": "D_0=\\dfrac{N+1{,}6}{P}",
+                "expr": "(N + 1.6) / P"
               },
               {
                 "display": "D_0 = D + 2a",
@@ -85,18 +90,23 @@
           },
           {
             "label": "Saillie (addendum)",
-            "when": "Hauteur de dent au-dessus du primitif : a = 1/P.",
+            "when": "Hauteur de dent au-dessus du primitif : a = 1/P en denture commune, 0,8/P en denture trapue (stub).",
             "variants": [
               {
                 "display": "a = 1 / P",
                 "tex": "a=\\dfrac{1}{P}",
                 "expr": "1 / P"
+              },
+              {
+                "display": "a = 0,8 / P (trapue)",
+                "tex": "a=\\dfrac{0{,}8}{P}",
+                "expr": "0.8 / P"
               }
             ]
           },
           {
             "label": "Creux (dedendum)",
-            "when": "Seul terme qui dépend de l'angle : 1,157/P à 14½°, 1,250/P à 20°.",
+            "when": "Le creux dépend de quatre facteurs : angle (1,157/P à 14½°, 1,250/P à 20°), finition (1,350/P arasée ou rectifiée), forme de denture (1,000/P trapue) et finesse du pas.",
             "variants": [
               {
                 "display": "b = 1,157 / P (14½°)",
@@ -107,6 +117,16 @@
                 "display": "b = 1,250 / P (20°)",
                 "tex": "b=\\dfrac{1{,}250}{P}",
                 "expr": "1.25 / P"
+              },
+              {
+                "display": "b = 1,350 / P (20°, arasée ou rectifiée)",
+                "tex": "b=\\dfrac{1{,}350}{P}",
+                "expr": "1.35 / P"
+              },
+              {
+                "display": "b = 1,000 / P (trapue)",
+                "tex": "b=\\dfrac{1{,}000}{P}",
+                "expr": "1 / P"
               }
             ]
           },

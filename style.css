@@ -16,15 +16,23 @@
   --danger: #9a2b1f;
   --mono: ui-monospace, "Cascadia Mono", "Consolas", "SFMono-Regular", monospace;
   --sans: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  /* Échelle d'espacement : 1 petit, 2 courant, 3 entre blocs, 4 entre sections. */
+  --s1: .35rem;
+  --s2: .7rem;
+  --s3: 1.05rem;
+  --s4: 1.6rem;
+  /* Longueur de ligne du texte courant, en caractères. */
+  --measure: 66ch;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  padding: 1.5rem 1rem 3rem;
+  padding: 1.75rem 1.25rem 3.5rem;
   color: var(--ink);
-  font: 16px/1.55 var(--sans);
+  font: 16px/1.6 var(--sans);
+  -webkit-text-size-adjust: 100%;
   background-color: var(--paper);
   /* Trame de papier millimétré, très discrète. */
   background-image:
@@ -40,8 +48,8 @@ header, main, footer {
 /* ---------- bandeau : plaque d'identification ---------- */
 
 header {
-  margin-bottom: 1.25rem;
-  padding: 1.25rem 1.5rem 1.1rem;
+  margin-bottom: var(--s4);
+  padding: 1.5rem 1.6rem 1.3rem;
   color: #f2f5f4;
   background: var(--steel);
   border-left: 6px solid var(--accent);
@@ -49,33 +57,43 @@ header {
 }
 
 header h1 {
-  margin: 0 0 .3rem;
-  font-size: 1.35rem;
+  margin: 0;
+  font-size: 1.45rem;
   font-weight: 600;
-  letter-spacing: .045em;
+  line-height: 1.2;
+  letter-spacing: .05em;
+  text-wrap: balance;
   text-transform: uppercase;
 }
 
 .sub {
-  margin: 0 0 1.25rem;
+  max-width: var(--measure);
+  margin: 0 0 var(--s3);
   color: var(--muted);
-  font-size: .82rem;
-  letter-spacing: .015em;
+  font-size: .84rem;
+  line-height: 1.6;
+  letter-spacing: .01em;
+  text-wrap: pretty;
 }
 
 header .sub {
-  margin: 0;
-  color: #c3d0d4;
+  max-width: none;
+  margin: var(--s2) 0 0;
+  padding-top: var(--s2);
+  color: #c6d3d7;
+  border-top: 1px solid rgba(255, 255, 255, .16);
   font-family: var(--mono);
-  font-size: .76rem;
+  font-size: .74rem;
+  line-height: 1.45;
   letter-spacing: .03em;
+  text-wrap: pretty;
 }
 
 /* ---------- cartes ---------- */
 
 .card {
-  margin-bottom: 1.1rem;
-  padding: 1.15rem 1.35rem 1.3rem;
+  margin-bottom: var(--s4);
+  padding: 1.3rem 1.5rem 1.45rem;
   background: var(--panel);
   border: 1px solid var(--rule);
   border-top: 3px solid var(--steel);
@@ -83,16 +101,28 @@ header .sub {
   box-shadow: 0 1px 2px rgba(22, 32, 42, .05);
 }
 
+/* Le texte courant garde une longueur de ligne lisible, même dans une carte large. */
+.card p {
+  max-width: var(--measure);
+  margin: 0 0 var(--s2);
+  text-wrap: pretty;
+}
+
+.card p:last-child,
+.card > :last-child { margin-bottom: 0; }
+
 main .card h2 {
   display: flex;
   align-items: center;
-  gap: .6rem;
-  margin: 0 0 .9rem;
-  padding-bottom: .55rem;
+  gap: .55rem;
+  margin: 0 0 var(--s3);
+  padding-bottom: .6rem;
   border-bottom: 1px solid var(--rule-soft);
-  font-size: .92rem;
+  font-size: .88rem;
   font-weight: 650;
-  letter-spacing: .09em;
+  line-height: 1.3;
+  letter-spacing: .08em;
+  text-wrap: balance;
   text-transform: uppercase;
   color: var(--steel);
 }
@@ -103,30 +133,37 @@ main { counter-reset: section; }
 main .card h2::before {
   counter-increment: section;
   content: counter(section, decimal-leading-zero);
-  padding: .12rem .4rem;
+  flex: none;
+  padding: .16rem .42rem .13rem;
   color: #fff;
   background: var(--accent);
   font-family: var(--mono);
-  font-size: .72rem;
+  font-size: .7rem;
   font-weight: 600;
+  line-height: 1;
   letter-spacing: .04em;
 }
 
 .card h3, .card h4 {
-  margin: 1.2rem 0 .5rem;
-  font-size: .84rem;
+  margin: var(--s4) 0 var(--s2);
+  font-size: .8rem;
   font-weight: 650;
-  letter-spacing: .07em;
+  line-height: 1.35;
+  letter-spacing: .06em;
+  text-wrap: balance;
   text-transform: uppercase;
   color: var(--steel);
 }
+
+.card h3 + p, .card h4 + p { margin-top: 0; }
 
 /* ---------- formulaires ---------- */
 
 form {
   display: grid;
-  gap: .85rem 1rem;
+  gap: .9rem 1.1rem;
   max-width: 460px;
+  margin: 0 0 var(--s2);
 }
 
 @media (min-width: 560px) {
@@ -135,17 +172,20 @@ form {
 
 label {
   display: grid;
-  gap: .28rem;
-  font-size: .72rem;
+  min-width: 0;
+  gap: .3rem;
+  font-size: .7rem;
   font-weight: 600;
-  letter-spacing: .07em;
+  line-height: 1.35;
+  letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
 input, select {
   max-width: 100%;
-  padding: .45rem .55rem;
+  min-width: 0;
+  padding: .5rem .6rem;
   border: 1px solid #b6c0c0;
   border-radius: 2px;
   background: #fff;
@@ -155,6 +195,9 @@ input, select {
 }
 
 select { font-family: var(--sans); font-size: .95rem; }
+
+/* La largeur d'un champ ne doit pas être imposée par son option la plus longue. */
+form input, form select { width: 100%; }
 
 #table-select { width: 100%; max-width: 460px; }
 
@@ -206,25 +249,28 @@ button.ghost:hover {
 
 /* ---------- messages ---------- */
 
-.message {
-  margin: .8rem 0 0;
-  padding: .45rem .7rem;
+p.message {
+  max-width: var(--measure);
+  margin: var(--s2) 0 0;
+  padding: .5rem .8rem;
   font-family: var(--mono);
-  font-size: .8rem;
+  font-size: .79rem;
+  line-height: 1.5;
   color: var(--steel);
   background: #f2f5f4;
   border-left: 3px solid var(--steel);
 }
 
-.message.error {
+p.message.error {
   color: var(--danger);
   background: #fbf1ef;
   border-left-color: var(--danger);
 }
 
 #term-formula {
+  max-width: none;
   min-height: 1.5em;
-  margin-top: .75rem;
+  margin-top: var(--s2);
   text-align: center;
 }
 
@@ -234,29 +280,31 @@ table.grid {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--mono);
-  font-size: .82rem;
+  font-size: .83rem;
   font-variant-numeric: tabular-nums;
 }
 
 table.grid th {
-  padding: .45rem .5rem;
+  padding: .5rem .6rem;
   border-bottom: 2px solid var(--steel);
   background: #e7ebea;
   color: #44535b;
   font-family: var(--sans);
-  font-size: .68rem;
+  font-size: .66rem;
   font-weight: 650;
-  letter-spacing: .06em;
+  line-height: 1.35;
+  letter-spacing: .07em;
   text-align: left;
   text-transform: uppercase;
   vertical-align: bottom;
   white-space: normal;
-  max-width: 8rem;
+  max-width: 8.5rem;
 }
 
 table.grid td {
-  padding: .34rem .5rem;
+  padding: .4rem .6rem;
   border-bottom: 1px solid var(--rule-soft);
+  line-height: 1.4;
   white-space: nowrap;
 }
 
@@ -284,10 +332,14 @@ table.grid td.value { text-align: right; }
 #train-table td:first-child {
   text-align: left;
   font-family: var(--sans);
-  font-size: .76rem;
-  letter-spacing: .02em;
+  font-size: .78rem;
+  line-height: 1.4;
+  letter-spacing: .01em;
   color: #33424b;
+  white-space: normal;
 }
+
+#train-table th:first-child { width: 55%; max-width: none; }
 
 .table-wrap {
   /* Pas de hauteur fixe : la table entière reste visible, c'est la page qui défile. */
@@ -319,30 +371,38 @@ table.grid td.value { text-align: right; }
   overflow-x: auto;
   border: 1px solid var(--rule);
   border-top: 0;
-  padding: 0 0 .25rem;
+  border-radius: 0 0 2px 2px;
+  padding: 0 0 var(--s1);
 }
 
 .formula-list h4 {
-  margin: 1rem .75rem .45rem;
-  font-size: .76rem;
-  letter-spacing: .07em;
+  margin: var(--s3) .85rem var(--s2);
+  font-size: .72rem;
+  font-weight: 650;
+  line-height: 1.4;
+  letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-.formula-list h4:first-child { margin-top: .7rem; }
+.formula-list h4:first-child { margin-top: var(--s2); }
 
 .formula-list table.grid th,
-.formula-list table.grid td { padding: .3rem .75rem; }
+.formula-list table.grid td { padding: .42rem .85rem; }
+
+.formula-list table.grid td.value { width: 7rem; text-align: right; }
 
 /* Dans une table de formules, la 1re colonne est un libellé de ligne, pas un en-tête. */
 .formula-list tbody th {
+  width: 34%;
+  max-width: none;
   background: transparent;
   border-bottom: 1px solid var(--rule-soft);
   color: #33424b;
   font-family: var(--sans);
-  font-size: .76rem;
+  font-size: .78rem;
   font-weight: 600;
+  line-height: 1.4;
   letter-spacing: 0;
   text-transform: none;
   white-space: normal;
@@ -355,19 +415,21 @@ table.grid td.value { text-align: right; }
 /* Table des symboles : symboles en colonne étroite, noms sur deux lignes. */
 table.grid.symbols td { white-space: normal; }
 .symbols td:first-child {
-  width: 4.5rem;
+  width: 4.75rem;
   text-align: center;
   color: var(--steel);
 }
+.symbols td:nth-child(1) { padding-right: .35rem; }
 .symbols td:nth-child(2) {
   font-family: var(--sans);
-  font-size: .78rem;
+  font-size: .8rem;
   color: #46555d;
 }
 .symbols td:nth-child(3) {
   font-family: var(--sans);
-  font-size: .8rem;
+  font-size: .82rem;
 }
+.symbols td:last-child { padding-left: .85rem; }
 .symbols .katex { font-size: 1.02em; }
 
 /* Les formules rendues par KaTeX restent sur une ligne dans les tableaux. */
@@ -383,18 +445,21 @@ details summary {
 /* ---------- nomenclature ---------- */
 
 .nomenclature {
-  margin: 1.2rem 0 0;
-  padding: .75rem;
+  margin: var(--s4) 0 0;
+  padding: .85rem .75rem .7rem;
   text-align: center;
   background: #fff;
   border: 1px solid var(--rule);
 }
 
 .nomenclature figcaption {
-  margin-top: .4rem;
+  max-width: 52ch;
+  margin: var(--s1) auto 0;
   color: var(--muted);
   font-size: .76rem;
-  letter-spacing: .02em;
+  line-height: 1.5;
+  letter-spacing: .01em;
+  text-wrap: pretty;
 }
 
 .nomenclature img { max-width: 100%; height: auto; }
@@ -506,25 +571,43 @@ table.grid.editable td[contenteditable]:focus {
 /* ---------- pied de page : cartouche ---------- */
 
 footer {
-  margin-top: 1rem;
-  padding-top: .7rem;
+  margin-top: var(--s3);
+  padding-top: .8rem;
   border-top: 1px solid var(--rule);
   color: var(--muted);
   font-family: var(--mono);
   font-size: .72rem;
+  line-height: 1.5;
   letter-spacing: .02em;
 }
 
 footer p { margin: 0; }
 
+/* Écrans étroits : marges et tailles resserrées, sans casser l'alignement. */
+@media (max-width: 620px) {
+  body { padding: 1rem .85rem 2.5rem; }
+  header { padding: 1.15rem 1.1rem 1rem; }
+  header h1 { font-size: 1.15rem; letter-spacing: .04em; }
+  .card { padding: 1.05rem 1rem 1.2rem; }
+  main .card h2 { font-size: .82rem; letter-spacing: .06em; }
+  table.grid { font-size: .8rem; }
+  table.grid th, table.grid td { padding-left: .45rem; padding-right: .45rem; }
+  .formula-list table.grid th,
+  .formula-list table.grid td { padding-left: .6rem; padding-right: .6rem; }
+  .symbols td:first-child { width: 3.75rem; }
+}
+
 /* ---------- impression ---------- */
 
 @media print {
+  @page { margin: 14mm; }
+
   body {
     padding: 0;
     background: #fff;
     background-image: none;
     color: #000;
+    font-size: 11pt;
   }
 
   header {
@@ -539,7 +622,11 @@ footer p { margin: 0; }
   .card h2, .card h3, .card h4, header h1 { color: #000; }
   main .card h2::before { background: #000; }
   .actions, form, #table-query-row, #table-found, #csv-status { display: none; }
+  .card h2, .card h3, .card h4 { break-after: avoid; }
+  table.grid { font-size: 9pt; }
   table.grid th { background: #eee; border-bottom-color: #000; }
   table.grid tbody tr:nth-child(even) td { background: #f7f7f7; }
   .nomenclature { border-color: #000; }
+  .message { border-left-color: #000; background: #fff; }
+  a { color: #000; text-decoration: none; }
 }

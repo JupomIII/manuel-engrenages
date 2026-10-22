@@ -78,6 +78,13 @@ par `P`, `M maxi/mini` par `ΔM = 0,001 cos φ / sin α` (roue amincie : −3ΔM
 −5ΔM ; pignon intact : 0 et −2ΔM), et mesure entre dents avec `k` de la Table 11.
 La mesure à la corde de la Table 10 est elle aussi divisée par `P`.
 
+La forme de denture et la finition modifient ces proportions (guide §4.2-4.3) :
+le formulaire propose donc **commune pleine profondeur** (`a = 1/P`) ou **trapue
+stub** (`a = 0,8/P`, `b = 1,000/P`, `D0 = (N+1,6)/P`), et **non arasée** ou
+**arasée/rectifiée** (20° seulement : `b = 1,350/P`, `ht = 2,350/P`). `a`, `b`,
+`ht`, `D0`, le jeu et la saillie à la corde suivent le choix, et les formules
+affichent aussi les variantes non retenues.
+
 ### Ajouter un calcul
 
 1. Écrire la fonction dans `calculs.js` et l'exposer dans `window.Calculs`.

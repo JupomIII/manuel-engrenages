@@ -272,8 +272,8 @@
   var ITEMS = [
     ["Nombre de dents N", "teeth", 0],
     ["Diamètre extérieur D<sub>0</sub>", "outsideDiameter", 4],
-    ["Addendum a", "addendum", 4],
-    ["Dedendum b", "dedendum", 4],
+    ["Saillie a (addendum)", "addendum", 4],
+    ["Creux b (dedendum)", "dedendum", 4],
     ["Profondeur totale h<sub>t</sub>", "wholeDepth", 4],
     ["Pas circulaire p", "circularPitch", 4],
     ["Épaisseur circulaire t", "toothThickness", 4],
@@ -295,9 +295,14 @@
     var C = num(document.getElementById("centre").value);
     var P = num(document.getElementById("train-dp").value);
     var angle = parseFloat(document.getElementById("angle").value);
+    var options = {
+      stub: document.getElementById("tooth-form").value === "stub",
+      shaved: document.getElementById("tooth-finish").value === "shaved"
+    };
     var msg = document.getElementById("train-message");
     var box = document.getElementById("train-results");
-    var result = (mG > 0 && C > 0 && P > 0) ? Calculs.calculateTrain(mG, C, P, angle) : { ok: false, error: "Entre des valeurs positives." };
+    var note = document.getElementById("train-form-note");
+    var result = (mG > 0 && C > 0 && P > 0) ? Calculs.calculateTrain(mG, C, P, angle, options) : { ok: false, error: "Entre des valeurs positives." };
     if (!result.ok) {
       msg.textContent = result.error;
       msg.hidden = false;
@@ -308,14 +313,16 @@
     msg.hidden = true;
     applyTables(result.pinion, result.pinionTeeth, angle, P, "pinion");
     applyTables(result.gear, result.gearTeeth, angle, P, "gear");
-    var dedendum = (angle === 14.5 ? 1.157 : 1.25) / P;
+    // La saillie et le creux du contexte suivent la denture choisie (trappe ou arasée).
+    var a = result.pinion.addendum;
+    var b = result.pinion.dedendum;
     Tables.setContext({
       P: P, p: Math.PI / P, phi: angle, C: C, mG: result.mG,
       NP: result.pinionTeeth, NG: result.gearTeeth,
       DP: result.pinionPitchDiameter, DG: result.gearPitchDiameter,
       N: result.pinionTeeth, D: result.pinionPitchDiameter,
-      a: 1 / P, b: dedendum, aG: 1 / P, aP: 1 / P,
-      ht: 1 / P + dedendum, hk: 2 / P, c: dedendum - 1 / P,
+      a: a, b: b, aG: a, aP: a,
+      ht: a + b, hk: 2 * a, c: b - a,
       alpha: Calculs.contactAngle(P, result.pinionTeeth, angle),
       Mth: result.pinion.pinMeasurement,
       dM: result.pinion.deltaM,
@@ -330,6 +337,22 @@
     html += "</tbody>";
     document.getElementById("train-table").innerHTML = html;
     box.hidden = false;
+    if (note) note.textContent = formNote(result);
+  }
+
+  // Rappelle la denture retenue : elle change a, b, D0, ht et le jeu.
+  function formNote(result) {
+    var pr = result.proportions;
+    var parts = [pr.stub ? "Denture trapue (stub) : a = 0,8/P" : "Denture commune, pleine profondeur : a = 1/P"];
+    if (pr.stub) parts.push("b = 1,000/P");
+    else if (pr.shaved) parts.push("dent arasée ou rectifiée : b = 1,350/P");
+    else if (pr.angle === 14.5) parts.push("dent non arasée : b = 1,157/P");
+    else parts.push("dent non arasée : b = 1,250/P");
+    if (pr.angle === 14.5 && document.getElementById("tooth-finish").value === "shaved") {
+      parts.push("la variante arasée n'existe qu'à 20°");
+    }
+    return parts.join(" \u00b7 ") + " \u2014 a = " + fmt(result.pinion.addendum) +
+      " po, b = " + fmt(result.pinion.dedendum) + " po, h\u209c = " + fmt(result.pinion.wholeDepth) + " po.";
   }
 
   // Numéro de fraise, dents à enjamber et mesure sur piges lus dans les tables du Handbook.

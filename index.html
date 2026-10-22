@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Manuel interactif — Engrenages</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-  <link rel="stylesheet" href="style.css?v=11">
+  <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
   <header>
@@ -32,14 +32,29 @@
             <option value="20">20°</option>
           </select>
         </label>
+        <label for="tooth-form">Forme de denture
+          <select id="tooth-form" name="tooth-form">
+            <option value="standard">Commune, pleine profondeur (1/P)</option>
+            <option value="stub">Trapue — stub (0,8/P)</option>
+          </select>
+        </label>
+        <label for="tooth-finish">Finition de la dent
+          <select id="tooth-finish" name="tooth-finish">
+            <option value="preferred">Non arasée (1,157 ou 1,250/P)</option>
+            <option value="shaved">Arasée ou rectifiée, 20° (1,350/P)</option>
+          </select>
+        </label>
         <div class="actions">
           <button type="submit">Calculer le train</button>
         </div>
       </form>
+      <p class="sub">La forme de denture et la finition changent la saillie, le creux, le diamètre extérieur
+        et la profondeur (guide §4.2-4.3) : trapue a = 0,8/P et b = 1,000/P, arasée b = 1,350/P à 20°.</p>
       <p id="train-message" class="message" hidden></p>
       <div id="train-results" hidden>
         <table class="grid" id="train-table"></table>
       </div>
+      <p id="train-form-note" class="sub"></p>
       <p class="sub">M maxi et M mini : roue amincie M<sub>th</sub> − 3ΔM et M<sub>th</sub> − 5ΔM ; pignon intact
         M<sub>th</sub> et M<sub>th</sub> − 2ΔM (ΔM = 0,001 cos φ / sin α, guide §7).</p>
       <figure class="nomenclature">
@@ -66,8 +81,8 @@
             <tr class="symbol-row" tabindex="0" role="button" data-label="Diamètre extérieur (de tête)" data-when="diamètre de la pièce à tourner, D + 2a."><td><span data-tex="D_0">D<sub>0</sub></span></td><td>Outside diameter</td><td>Diamètre extérieur (de tête)</td></tr>
             <tr class="symbol-row" tabindex="0" role="button" data-label="Diamètre de pied" data-when="D − 2b, contrôle du creux après la taille."><td><span data-tex="D_R">D<sub>R</sub></span></td><td>Root diameter</td><td>Diamètre de pied</td></tr>
             <tr class="symbol-row" tabindex="0" role="button" data-label="Diamètre du cercle de base" data-when="Diamètre de base : D cos φ, pour tracer la développante."><td><span data-tex="D_B">D<sub>B</sub></span></td><td>Base circle diameter</td><td>Diamètre du cercle de base</td></tr>
-            <tr class="symbol-row" tabindex="0" role="button" data-label="Saillie (addendum)" data-when="Saillie : 1/P, hauteur de dent au-dessus du primitif."><td><span data-tex="a">a</span></td><td>Addendum</td><td>Saillie (addendum)</td></tr>
-            <tr class="symbol-row" tabindex="0" role="button" data-label="Creux (dedendum)" data-when="Creux : 1,157/P à 14½°, 1,250/P à 20°."><td><span data-tex="b">b</span></td><td>Dedendum</td><td>Creux (dedendum)</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Saillie (addendum)" data-when="Saillie : 1/P, hauteur de dent au-dessus du primitif ; 0,8/P pour une denture trapue (stub)."><td><span data-tex="a">a</span></td><td>Addendum</td><td>Saillie (addendum)</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Creux (dedendum)" data-when="Creux : 1,157/P à 14½°, 1,250/P à 20°, 1,350/P si la dent est arasée ou rectifiée, 1,000/P en denture trapue."><td><span data-tex="b">b</span></td><td>Dedendum</td><td>Creux (dedendum)</td></tr>
             <tr class="symbol-row" tabindex="0" role="button" data-label="Jeu" data-when="b − a, dégagement au pied de dent."><td><span data-tex="c">c</span></td><td>Clearance</td><td>Jeu</td></tr>
             <tr class="symbol-row" tabindex="0" role="button" data-label="Profondeur de travail" data-when="a_G + a_P, hauteur réellement en prise."><td><span data-tex="h_k">h<sub>k</sub></span></td><td>Working depth</td><td>Profondeur de travail</td></tr>
             <tr class="symbol-row" tabindex="0" role="button" data-label="Profondeur totale" data-when="a + b, profondeur de passe de la fraise."><td><span data-tex="h_t">h<sub>t</sub></span></td><td>Whole depth</td><td>Profondeur totale</td></tr>
@@ -137,13 +152,13 @@
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
     onload="window.renderAllMath && window.renderAllMath()"></script>
   <script src="math.js?v=1"></script>
-  <script src="calculs.js?v=5"></script>
+  <script src="calculs.js?v=6"></script>
   <script src="tables_embedded.js?v=9"></script>
   <script src="tables.js?v=8"></script>
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=13"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="ocr_table.js"></script>
   <script src="ocr.js"></script>
-  <script src="nomenclature.js"></script>
+  <script src="nomenclature.js?v=2"></script>
 </body>
 </html>
