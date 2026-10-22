@@ -1,12 +1,11 @@
 /*
- * Interface : lecture du CSV, affichage des résultats, historique local.
+ * Interface : lecture des tables, affichage des résultats et export.
  * Aucune dépendance, aucun build : le fichier est servi tel quel.
  */
 (function () {
   "use strict";
 
   var CSV_PATH = "tables/Table 3. Gear Tooth Parts for American National Standard Coarse Pitch.csv";
-  var STORAGE_KEY = "engrenages.historique.v1";
 
   var els = {
     form: document.getElementById("gear-form"),
@@ -23,14 +22,12 @@
     tableQuery: document.getElementById("table-query"),
     tableSearch: document.getElementById("table-search"),
     tableFound: document.getElementById("table-found"),
+    tableQueryRow: document.getElementById("table-query-row"),
+    tableQueryText: document.getElementById("table-query-text"),
     formulaList: document.getElementById("formula-list"),
     tableWrap: document.getElementById("table-wrap"),
     exportResultBtn: document.getElementById("export-result"),
     pitchTable: document.getElementById("pitch-table"),
-    historyStatus: document.getElementById("history-status"),
-    historyTable: document.getElementById("history-table"),
-    exportBtn: document.getElementById("export"),
-    clearBtn: document.getElementById("clear"),
     resetBtn: document.getElementById("reset"),
     gearAngle: document.getElementById("gear-angle")
   };
@@ -40,7 +37,7 @@
     rows: [],       // cellules dans l'ordre du fichier
     tables: [],     // tables du registre (Tables.load)
     table: null,    // table affichée, si elle vient du registre
-    history: [],
+    labels: [],     // en-tête de chaque colonne affichée (symbole + nom)
     last: null      // dernier résultat affiché, pour l'export
   };
 
@@ -107,7 +104,9 @@
 
   function renderReferenceTable() {
     var html = "<thead><tr>";
-    state.headers.forEach(function (h) { html += "<th>" + escapeHtml(h) + "</th>"; });
+    state.headers.forEach(function (h, i) {
+      html += "<th>" + escapeHtml(state.labels[i] || h) + "</th>";
+    });
     html += "</tr></thead><tbody>";
     state.rows.forEach(function (row) {
       html += "<tr>";
@@ -151,6 +150,7 @@
 
       state.headers = parsed.headers;
       state.rows = parsed.rows;
+      state.labels = parsed.headers;
       els.csvStatus.className = "";
       els.csvStatus.textContent = parsed.rows.length + " lignes chargées depuis " + path + ".";
       renderReferenceTable();
@@ -204,13 +204,18 @@
     els.tableQuery.value = "";
   }
 
+  var KEY_LABELS = { N: "N — nombre de dents", P: "P — pas diamétral" };
+
   function renderCsvTable(table) {
     state.headers = table.headers;
     state.rows = table.rows;
+    state.labels = table.columnLabels || table.headers;
     els.formulaList.hidden = true;
     els.formulaList.innerHTML = "";
     els.tableWrap.hidden = false;
-    els.csvStatus.className = "";
+    els.tableQueryRow.hidden = false;
+    els.tableQueryText.textContent = "Chercher par " + (KEY_LABELS[table.lookup] || table.lookup);
+    els.csvStatus.className = "sub";
     els.csvStatus.textContent = table.title + " — " + table.rows.length + " lignes.";
     renderReferenceTable();
     fillPitchOptions(table.index.P !== undefined ? table.index.P : null);
@@ -247,9 +252,10 @@
       html += "</tbody></table>";
     });
     els.tableWrap.hidden = true;
+    els.tableQueryRow.hidden = true;
     els.formulaList.hidden = false;
     els.formulaList.innerHTML = html;
-    els.csvStatus.className = "";
+    els.csvStatus.className = "sub";
     els.csvStatus.textContent = table.title + " — " + count +
       " formules. Les valeurs suivent le dernier calcul (P, N, p, angle).";
   }
@@ -259,7 +265,7 @@
     if (!table) return;
     if (table.kind === "formulas") {
       els.tableFound.className = "message";
-      els.tableFound.textContent = "Table de formules : les valeurs sont déjà calculées à droite.";
+      els.tableFound.textContent = "Table de formules : les valeurs sont déjà calculées dans le tableau.";
       els.tableFound.hidden = false;
       return;
     }
@@ -282,11 +288,10 @@
     var parts = [];
     Object.keys(found.values).forEach(function (field) {
       if (field === table.lookup) return;
-      parts.push(found.table.headers[found.table.index[field]] + " = " + found.values[field]);
+      parts.push((found.table.labels[field] || field) + " = " + found.values[field]);
     });
-    var keyLabels = { N: "nombre de dents", P: "pas diamétral" };
     els.tableFound.className = "message";
-    els.tableFound.textContent = table.title + " : " + (keyLabels[table.lookup] || table.lookup) +
+    els.tableFound.textContent = table.title + " : " + (KEY_LABELS[table.lookup] || table.lookup) +
       " = " + value + " → " + parts.join(" ; ");
     els.tableFound.hidden = false;
   }
@@ -312,28 +317,31 @@
     if (props) {
       // Les présélections de b et de jeu de ces tables sont celles de la denture 20°.
       var shortTitle = props.table.title.split(" — ")[0] + (angle === 14.5 ? " (valeurs 20°)" : "");
-      props.table.headers.forEach(function (header, i) {
-        rows.push([shortTitle + " — " + header, props.row[i]]);
+      Object.keys(props.table.index).sort(function (a, b) {
+        return props.table.index[a] - props.table.index[b];
+      }).forEach(function (field) {
+        rows.push([shortTitle + " : " + (props.table.labels[field] || field),
+          props.row[props.table.index[field]]]);
       });
     }
     var chordal = Tables.lookup(angle === 14.5 ? "table10-145" : "table10-20", { N: N });
     if (chordal) {
       var m1 = num(chordal.values.M);
-      rows.push(["Table 10 — M à la corde, 1 D.P. (pouce)", chordal.values.M]);
-      if (isFinite(m1)) rows.push(["M à la corde = table / P (pouce, sans jeu)", fmt(m1 / P)]);
+      rows.push(["Table 10 : M — à la corde, 1 D.P.", chordal.values.M]);
+      if (isFinite(m1)) rows.push(["M — à la corde = table / P, sans jeu (pouce)", fmt(m1 / P)]);
     }
     var over = Tables.lookup(angle === 14.5 ? "table11-145" : "table11-20", { N: N });
-    if (over) rows.push(["Table 11 — dents à enjamber k", over.values.k]);
+    if (over) rows.push(["Table 11 : k — dents enjambées", over.values.k]);
     var pins = Tables.lookup(N % 2 === 0 ? "pins-even" : "pins-odd", { N: N });
     if (pins) {
       var raw = num(pins.values[pinField(angle)]);
       if (isFinite(raw)) {
         rows.push(["Piges (table " + (N % 2 === 0 ? "1, pair" : "2, impair") +
-          ") — Mth = table / P (pouce)", fmt(raw / P)]);
+          ") : M — Mth = table / P (pouce)", fmt(raw / P)]);
       }
     }
     var cutter = Tables.lookup("cutters-standard", { N: N });
-    if (cutter) rows.push(["Série de fraises (p. 2231) — numéro", cutter.values.cutter]);
+    if (cutter) rows.push(["Fraises (p. 2231) : n° — fraise", cutter.values.cutter]);
     return rows;
   }
 
@@ -407,96 +415,9 @@
     if (!Tables.lookup("table3", { P: P }) && !Tables.lookup("table5", { P: P })) {
       setMessage("Pas de valeurs de table pour P = " + fmt(P) + " : les cotes sont calculées, mais les valeurs de table sont absentes.", "");
     }
-    addHistory(gear);
   }
 
-  // ---------- historique ----------
-
-  function loadHistory() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      var data = raw ? JSON.parse(raw) : [];
-      state.history = Array.isArray(data) ? data : [];
-    } catch (error) {
-      state.history = [];
-    }
-    renderHistory();
-  }
-
-  function saveHistory() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
-    } catch (error) {
-      setMessage("Historique non enregistré (stockage du navigateur indisponible).", "error");
-    }
-  }
-
-  function addHistory(gear) {
-    state.history.push({
-      date: new Date().toISOString().slice(0, 19).replace("T", " "),
-      diametralPitch: gear.diametralPitch,
-      teeth: gear.teeth,
-      pitchDiameter: gear.pitchDiameter,
-      outsideDiameter: gear.outsideDiameter,
-      rootDiameter: gear.rootDiameter,
-      circularPitch: gear.circularPitch
-    });
-    saveHistory();
-    renderHistory();
-  }
-
-  function renderHistory() {
-    if (state.history.length === 0) {
-      els.historyStatus.textContent = "Aucun calcul enregistré.";
-      els.historyTable.innerHTML = "";
-      return;
-    }
-
-    els.historyStatus.textContent = state.history.length +
-      " calcul(s) enregistré(s). Les plus récents en premier.";
-
-    var html = "<thead><tr><th>Date</th><th>P</th><th>Dents</th><th>Ø primitif</th>" +
-      "<th>Ø extérieur</th><th>Ø pied</th></tr></thead><tbody>";
-    state.history.slice().reverse().forEach(function (entry) {
-      html += "<tr><td>" + escapeHtml(entry.date) + "</td><td>" + fmt(entry.diametralPitch) +
-        "</td><td>" + entry.teeth + "</td><td>" + fmt(entry.pitchDiameter) +
-        "</td><td>" + fmt(entry.outsideDiameter) + "</td><td>" + fmt(entry.rootDiameter) + "</td></tr>";
-    });
-    html += "</tbody>";
-    els.historyTable.innerHTML = html;
-  }
-
-  function exportHistory() {
-    if (state.history.length === 0) {
-      setMessage("Rien à exporter : l'historique est vide.", "error");
-      return;
-    }
-
-    var lines = ["Date,Pas diametral,Dents,Diametre primitif,Diametre exterieur,Diametre de pied,Pas circulaire"];
-    state.history.forEach(function (entry) {
-      lines.push([
-        csvCell(entry.date),
-        csvCell(entry.diametralPitch.toFixed(4)),
-        csvCell(entry.teeth),
-        csvCell(entry.pitchDiameter.toFixed(4)),
-        csvCell(entry.outsideDiameter.toFixed(4)),
-        csvCell(entry.rootDiameter.toFixed(4)),
-        csvCell(entry.circularPitch.toFixed(4))
-      ].join(","));
-    });
-
-    var blob = new Blob([lines.join("\r\n") + "\r\n"], { type: "text/csv;charset=utf-8" });
-    var url = URL.createObjectURL(blob);
-    var link = document.createElement("a");
-    link.href = url;
-    link.download = "calculs_engrenages.csv";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }
-
-  // Exporte le résultat affiché : cotes calculées puis valeurs de la table (si trouvées).
+  // Exporte le résultat affiché : cotes calculées puis valeurs des tables.
   function exportResult() {
     var last = state.last;
     if (!last) return;
@@ -507,7 +428,7 @@
       rows.push(["Valeurs des tables", "", ""]);
       last.tableRows.forEach(function (row) { rows.push([row[0], row[1], ""]); });
     } else {
-      rows.push(["Valeurs de la table", "absentes pour ce pas", ""]);
+      rows.push(["Valeurs des tables", "absentes pour ce pas", ""]);
     }
     var text = rows.map(function (row) { return row.map(csvCell).join(","); }).join("\r\n") + "\r\n";
     var blob = new Blob(["\uFEFF" + text], { type: "text/csv;charset=utf-8" });
@@ -519,14 +440,6 @@
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }
-
-  function clearHistory() {
-    if (state.history.length === 0) return;
-    if (!window.confirm("Vider l'historique des calculs ?")) return;
-    state.history = [];
-    saveHistory();
-    renderHistory();
   }
 
   // ---------- train de deux roues ----------
@@ -625,16 +538,13 @@
     els.results.hidden = true;
   });
 
-  els.exportBtn.addEventListener("click", exportHistory);
   els.exportResultBtn.addEventListener("click", exportResult);
-  els.clearBtn.addEventListener("click", clearHistory);
   els.tableSearch.addEventListener("click", searchTable);
   els.tableQuery.addEventListener("keydown", function (event) {
     if (event.key === "Enter") { event.preventDefault(); searchTable(); }
   });
   els.tableSelect.addEventListener("change", function () { showTable(els.tableSelect.value); });
 
-  loadHistory();
   Tables.load().then(function (result) {
     state.tables = result.tables;
     if (result.errors.length > 0) {

@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Manuel interactif — Engrenages</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <header>
     <h1>Manuel interactif — Engrenages</h1>
-    <p class="sub">Calculs de base à partir de la table <code>table_engrenages.csv</code></p>
+    <p class="sub">Engrenages droits — calculs de taille et tables du Machinery’s Handbook</p>
   </header>
 
   <main>
@@ -90,30 +90,16 @@
 
     <section class="card">
       <h2>Données de référence</h2>
-      <p id="csv-status">Chargement…</p>
-      <p><label>Table utilisée : <select id="table-select"></select></label></p>
-      <p><label>Chercher : <input id="table-query" type="number" step="any"></label>
+      <p><label>Table : <select id="table-select"></select></label></p>
+      <p id="table-query-row"><label for="table-query"><span id="table-query-text">Chercher</span>
+        <input id="table-query" type="number" step="any"></label>
         <button type="button" id="table-search" class="ghost">Chercher</button></p>
       <p id="table-found" class="message" hidden></p>
-      <details open>
-        <summary>Voir la table</summary>
-        <div id="table-wrap" class="table-wrap">
-          <table class="grid" id="pitch-table"></table>
-        </div>
-        <div id="formula-list" class="formula-list" hidden></div>
-      </details>
-    </section>
-
-    <section class="card">
-      <h2>Historique</h2>
-      <p id="history-status">Aucun calcul enregistré.</p>
-      <div class="table-wrap">
-        <table class="grid" id="history-table"></table>
+      <p id="csv-status" class="sub">Chargement…</p>
+      <div id="table-wrap" class="table-wrap">
+        <table class="grid" id="pitch-table"></table>
       </div>
-      <div class="actions">
-        <button type="button" id="export">Exporter en CSV</button>
-        <button type="button" id="clear" class="ghost">Vider</button>
-      </div>
+      <div id="formula-list" class="formula-list" hidden></div>
     </section>
   </main>
 
@@ -143,13 +129,13 @@
   </aside>
 
   <footer>
-    <p>Site statique — aucune donnée n'est envoyée sur un serveur. Les calculs sont conservés dans le navigateur (localStorage).</p>
+    <p>Site statique — aucune donnée n'est envoyée sur un serveur.</p>
   </footer>
 
-  <script src="calculs.js?v=2"></script>
+  <script src="calculs.js?v=4"></script>
   <script src="tables_embedded.js"></script>
-  <script src="tables.js?v=2"></script>
-  <script src="app.js?v=2"></script>
+  <script src="tables.js?v=4"></script>
+  <script src="app.js?v=4"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="ocr_table.js"></script>
   <script src="ocr.js"></script>

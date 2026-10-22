@@ -132,6 +132,21 @@ table.grid td.value {
   font-variant-numeric: tabular-nums;
 }
 
+.formula-list h4 {
+  margin: 1.1rem 0 .5rem;
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.formula-list h4:first-child {
+  margin-top: 0;
+}
+
+.formula-list table.grid + table.grid {
+  margin-top: .75rem;
+}
+
 .table-wrap {
   overflow-x: auto;
   max-height: 320px;

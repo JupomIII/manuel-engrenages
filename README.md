@@ -2,8 +2,8 @@
 
 Petit site statique (HTML/CSS/JS, sans build) : on saisit un pas diamétral et un
 nombre de dents, et on obtient les cotes de l'engrenage. Les données de référence
-viennent de `table_engrenages.csv` ; les calculs sont conservés dans le navigateur
-et exportables en CSV.
+viennent des tables du Machinery's Handbook décrites dans `tables/registry.json` ;
+le résultat affiché est exportable en CSV.
 
 ## Lancer en local
 
@@ -15,6 +15,10 @@ python -m http.server 8000
 ```
 
 Puis ouvrir http://localhost:8000
+
+Les scripts portent un numéro de version (`app.js?v=4`) : après une modification,
+incrémenter ce numéro dans `index.html` évite qu'un navigateur garde l'ancien
+fichier en cache.
 
 ## Publier sur GitHub Pages
 
@@ -29,10 +33,10 @@ Aucune étape de compilation, aucun secret : tout est public.
 
 | Fichier | Rôle |
 | --- | --- |
-| `index.html` | Structure de la page (formulaire, résultats, table, historique) |
+| `index.html` | Structure de la page (formulaire, résultats, tables de référence) |
 | `calculs.js` | Formules pures, sans DOM — c'est ici qu'on ajoute des calculs |
 | `tables.js` | Chargement des tables du registre, lecture CSV, évaluation des formules |
-| `app.js` | Lecture du CSV, affichage, historique local (`localStorage`) |
+| `app.js` | Lecture des tables, affichage, export du résultat |
 | `style.css` | Mise en forme |
 | `table_engrenages.csv` | Données de référence |
 | `tables/registry.json` | Liste des tables du Handbook (valeurs et formules) |
