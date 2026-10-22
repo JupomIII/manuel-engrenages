@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Manuel interactif — Engrenages</title>
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
   <header>
@@ -14,49 +15,9 @@
 
   <main>
     <section class="card">
-      <h2>Engrenage droit</h2>
-      <form id="gear-form" autocomplete="off">
-        <label for="dp">Pas diamétral (P)
-          <input id="dp" name="dp" type="number" step="any" min="0" list="dp-list" required>
-        </label>
-        <datalist id="dp-list"></datalist>
-
-        <label for="teeth">Nombre de dents (N)
-          <input id="teeth" name="teeth" type="number" step="1" min="1" required>
-        </label>
-
-        <label for="gear-angle">Angle de pression
-          <select id="gear-angle" name="gear-angle">
-            <option value="14.5">14,5°</option>
-            <option value="20" selected>20°</option>
-          </select>
-        </label>
-
-        <div class="actions">
-          <button type="submit">Calculer</button>
-          <button type="button" id="reset" class="ghost">Réinitialiser</button>
-        </div>
-      </form>
-
-      <p id="message" class="message" hidden></p>
-
-      <div id="results" hidden>
-        <h3>Résultats <span class="unit">(cotes en pouces, module en mm)</span></h3>
-        <table class="grid" id="results-table"></table>
-        <div id="table-match" hidden>
-          <h4>Valeurs de la table</h4>
-          <table class="grid" id="match-table"></table>
-        </div>
-        <div class="actions">
-          <button type="button" id="export-result" class="ghost">Exporter ce résultat (CSV)</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="card">
       <h2>Train d'engrenages (pignon et roue)</h2>
       <form id="train-form" autocomplete="off">
-        <label for="mg">Rapport de transmission (mG)
+        <label for="mg">Rapport de transmission (m<sub>G</sub>)
           <input id="mg" name="mg" type="number" step="any" min="0" required>
         </label>
         <label for="centre">Entraxe C (pouces)
@@ -79,13 +40,52 @@
       <div id="train-results" hidden>
         <table class="grid" id="train-table"></table>
       </div>
-      <p class="sub">M maxi et M mini : roue amincie Mth − 3ΔM et Mth − 5ΔM ; pignon intact Mth et Mth − 2ΔM
-        (ΔM = 0,001 cos φ / sin α, guide §7).</p>
+      <p class="sub">M maxi et M mini : roue amincie M<sub>th</sub> − 3ΔM et M<sub>th</sub> − 5ΔM ; pignon intact
+        M<sub>th</sub> et M<sub>th</sub> − 2ΔM (ΔM = 0,001 cos φ / sin α, guide §7).</p>
       <figure class="nomenclature">
         <div id="nomenclature-svg"></div>
         <figcaption>Nomenclature des dents d'engrenage (Table 1, p. 2212) : cliquer un terme</figcaption>
       </figure>
       <p id="term-formula" class="message"></p>
+
+      <h3>Symboles — anglais et français</h3>
+      <p class="sub">Notation du Machinery’s Handbook (tables 1 et 2, p. 2212-2213) et du guide 241-HAL-07.
+        Cliquer un terme du dessin ci-dessus pour voir sa formule.</p>
+      <div class="table-wrap">
+        <table class="grid symbols">
+          <thead><tr><th>Symbole</th><th>Anglais</th><th>Français</th></tr></thead>
+          <tbody>
+            <tr><td><span data-tex="m_G">m<sub>G</sub></span></td><td>Gear ratio</td><td>Rapport de transmission</td></tr>
+            <tr><td><span data-tex="C">C</span></td><td>Center distance</td><td>Entraxe</td></tr>
+            <tr><td><span data-tex="P">P</span></td><td>Diametral pitch</td><td>Pas diamétral</td></tr>
+            <tr><td><span data-tex="p">p</span></td><td>Circular pitch</td><td>Pas circulaire</td></tr>
+            <tr><td><span data-tex="N">N</span></td><td>Number of teeth</td><td>Nombre de dents</td></tr>
+            <tr><td><span data-tex="N_P">N<sub>P</sub></span></td><td>Number of teeth in pinion</td><td>Dents du pignon</td></tr>
+            <tr><td><span data-tex="N_G">N<sub>G</sub></span></td><td>Number of teeth in gear</td><td>Dents de la roue</td></tr>
+            <tr><td><span data-tex="D">D</span></td><td>Pitch diameter</td><td>Diamètre primitif</td></tr>
+            <tr><td><span data-tex="D_0">D<sub>0</sub></span></td><td>Outside diameter</td><td>Diamètre extérieur (de tête)</td></tr>
+            <tr><td><span data-tex="D_R">D<sub>R</sub></span></td><td>Root diameter</td><td>Diamètre de pied</td></tr>
+            <tr><td><span data-tex="D_B">D<sub>B</sub></span></td><td>Base circle diameter</td><td>Diamètre du cercle de base</td></tr>
+            <tr><td><span data-tex="a">a</span></td><td>Addendum</td><td>Saillie (addendum)</td></tr>
+            <tr><td><span data-tex="b">b</span></td><td>Dedendum</td><td>Creux (dedendum)</td></tr>
+            <tr><td><span data-tex="c">c</span></td><td>Clearance</td><td>Jeu</td></tr>
+            <tr><td><span data-tex="h_k">h<sub>k</sub></span></td><td>Working depth</td><td>Profondeur de travail</td></tr>
+            <tr><td><span data-tex="h_t">h<sub>t</sub></span></td><td>Whole depth</td><td>Profondeur totale</td></tr>
+            <tr><td><span data-tex="t">t</span></td><td>Circular thickness</td><td>Épaisseur circulaire</td></tr>
+            <tr><td><span data-tex="T">T</span></td><td>Chordal thickness</td><td>Épaisseur à la corde</td></tr>
+            <tr><td><span data-tex="H">H</span></td><td>Chordal addendum</td><td>Saillie à la corde</td></tr>
+            <tr><td><span data-tex="r_f">r<sub>f</sub></span></td><td>Fillet radius of basic rack</td><td>Rayon de raccordement de la crémaillère</td></tr>
+            <tr><td><span data-tex="W">W</span></td><td>Wire or pin diameter</td><td>Diamètre de pige</td></tr>
+            <tr><td><span data-tex="M">M</span></td><td>Measurement over wires</td><td>Mesure sur piges</td></tr>
+            <tr><td><span data-tex="M_{th}">M<sub>th</sub></span></td><td>Theoretical measurement over wires</td><td>Mesure théorique sur piges</td></tr>
+            <tr><td><span data-tex="\Delta M">ΔM</span></td><td>Variation of M per 0.001 in. of tooth thickness</td><td>Variation de M par 0,001 po d’épaisseur en moins</td></tr>
+            <tr><td><span data-tex="k">k</span></td><td>Number of teeth gauged over</td><td>Nombre de dents enjambées</td></tr>
+            <tr><td><span data-tex="\varphi">φ</span></td><td>Pressure angle</td><td>Angle de pression</td></tr>
+            <tr><td><span data-tex="\alpha">α</span></td><td>Contact angle at the wire</td><td>Angle de contact de la pige</td></tr>
+            <tr><td><span data-tex="\operatorname{inv}\varphi">inv φ</span></td><td>Involute function</td><td>Fonction involute</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <section class="card">
@@ -132,10 +132,13 @@
     <p>Site statique — aucune donnée n'est envoyée sur un serveur.</p>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
+    onload="window.renderAllMath && window.renderAllMath()"></script>
+  <script src="math.js?v=1"></script>
   <script src="calculs.js?v=4"></script>
-  <script src="tables_embedded.js"></script>
-  <script src="tables.js?v=4"></script>
-  <script src="app.js?v=4"></script>
+  <script src="tables_embedded.js?v=8"></script>
+  <script src="tables.js?v=7"></script>
+  <script src="app.js?v=9"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="ocr_table.js"></script>
   <script src="ocr.js"></script>

@@ -8,15 +8,6 @@
   var CSV_PATH = "tables/Table 3. Gear Tooth Parts for American National Standard Coarse Pitch.csv";
 
   var els = {
-    form: document.getElementById("gear-form"),
-    dp: document.getElementById("dp"),
-    teeth: document.getElementById("teeth"),
-    dpList: document.getElementById("dp-list"),
-    message: document.getElementById("message"),
-    results: document.getElementById("results"),
-    resultsTable: document.getElementById("results-table"),
-    match: document.getElementById("table-match"),
-    matchTable: document.getElementById("match-table"),
     csvStatus: document.getElementById("csv-status"),
     tableSelect: document.getElementById("table-select"),
     tableQuery: document.getElementById("table-query"),
@@ -26,10 +17,7 @@
     tableQueryText: document.getElementById("table-query-text"),
     formulaList: document.getElementById("formula-list"),
     tableWrap: document.getElementById("table-wrap"),
-    exportResultBtn: document.getElementById("export-result"),
-    pitchTable: document.getElementById("pitch-table"),
-    resetBtn: document.getElementById("reset"),
-    gearAngle: document.getElementById("gear-angle")
+    pitchTable: document.getElementById("pitch-table")
   };
 
   var state = {
@@ -37,8 +25,7 @@
     rows: [],       // cellules dans l'ordre du fichier
     tables: [],     // tables du registre (Tables.load)
     table: null,    // table affichée, si elle vient du registre
-    labels: [],     // en-tête de chaque colonne affichée (symbole + nom)
-    last: null      // dernier résultat affiché, pour l'export
+    labels: []      // en-tête de chaque colonne affichée (symbole + nom)
   };
 
   // ---------- utilitaires ----------
@@ -61,20 +48,6 @@
     });
   }
 
-  function csvCell(value) {
-    var text = value === null || value === undefined ? "" : String(value);
-    if (/[",;\r\n]/.test(text)) {
-      return '"' + text.replace(/"/g, '""') + '"';
-    }
-    return text;
-  }
-
-  function setMessage(text, kind) {
-    els.message.textContent = text || "";
-    els.message.hidden = !text;
-    els.message.className = "message" + (kind ? " " + kind : "");
-  }
-
   // ---------- CSV ----------
 
   function parseCsv(text) {
@@ -94,14 +67,6 @@
     return { headers: headers, rows: rows };
   }
 
-  // La 1re colonne du fichier contient une coquille sur la 1re ligne
-  // (0.1142 au lieu de 0.3142) : on recalcule P depuis le pas circulaire.
-  function rowPitch(row) {
-    var circularPitch = num(row[1]);
-    if (!isFinite(circularPitch) || circularPitch <= 0) return NaN;
-    return Calculs.diametralPitchFromCircularPitch(circularPitch);
-  }
-
   function renderReferenceTable() {
     var html = "<thead><tr>";
     state.headers.forEach(function (h, i) {
@@ -115,21 +80,6 @@
     });
     html += "</tbody>";
     els.pitchTable.innerHTML = html;
-  }
-
-  // at = colonne du pas diamétral dans la table affichée (null : on la déduit du pas circulaire).
-  function fillPitchOptions(at) {
-    var seen = {};
-    var options = "";
-    state.rows.forEach(function (row) {
-      var p = (at === null || at === undefined) ? rowPitch(row) : num(row[at]);
-      if (!isFinite(p) || p <= 0) return;
-      var key = Math.round(p * 10000);
-      if (seen[key]) return;
-      seen[key] = true;
-      options += '<option value="' + p.toFixed(4) + '"></option>';
-    });
-    els.dpList.innerHTML = options;
   }
 
   async function loadReference(path) {
@@ -154,7 +104,6 @@
       els.csvStatus.className = "";
       els.csvStatus.textContent = parsed.rows.length + " lignes chargées depuis " + path + ".";
       renderReferenceTable();
-      fillPitchOptions(null);
     } catch (error) {
       els.csvStatus.className = "message error";
       els.csvStatus.textContent = "Impossible de charger " + path + " (" + error.message + "). " +
@@ -218,7 +167,6 @@
     els.csvStatus.className = "sub";
     els.csvStatus.textContent = table.title + " — " + table.rows.length + " lignes.";
     renderReferenceTable();
-    fillPitchOptions(table.index.P !== undefined ? table.index.P : null);
   }
 
   // Table de formules : chaque ligne est évaluée avec les valeurs du dernier calcul.
@@ -242,19 +190,25 @@
           } catch (error) {
             reason = error.message;
           }
-          html += "<tr><th>" + (first ? escapeHtml(row.label) : "") + "</th><td>" +
-            escapeHtml(variant.display) + '</td><td class="value"' +
-            (reason ? ' title="' + escapeHtml(reason) + '"' : "") + ">" + value + "</td></tr>";
+          var tex = variant.tex || "";
+          var cell = tex
+            ? '<span data-tex="' + escapeHtml(tex) + '">' + escapeHtml(variant.display) + "</span>"
+            : escapeHtml(variant.display);
+          html += "<tr><th>" + (first ? escapeHtml(row.label) : "") + "</th><td>" + cell +
+            '</td><td class="value"' + (reason ? ' title="' + escapeHtml(reason) + '"' : "") +
+            ">" + value + "</td></tr>";
           first = false;
           count++;
         });
       });
       html += "</tbody></table>";
     });
+    els.pitchTable.innerHTML = "";
     els.tableWrap.hidden = true;
     els.tableQueryRow.hidden = true;
     els.formulaList.hidden = false;
     els.formulaList.innerHTML = html;
+    if (window.renderMath) window.renderMath(els.formulaList);
     els.csvStatus.className = "sub";
     els.csvStatus.textContent = table.title + " — " + count +
       " formules. Les valeurs suivent le dernier calcul (P, N, p, angle).";
@@ -307,160 +261,25 @@
     return "M20";
   }
 
-  // Cotes lues dans les tables du registre (protocole du guide, §6 à §8).
-  function tableValues(P, N, angle) {
-    var rows = [];
-    // Table 3 pour les pas grossiers, Table 5 pour les pas fins (les deux vont jusqu'à P = 20).
-    var props = P > 20 ?
-      (Tables.lookup("table5", { P: P }) || Tables.lookup("table3", { P: P })) :
-      (Tables.lookup("table3", { P: P }) || Tables.lookup("table5", { P: P }));
-    if (props) {
-      // Les présélections de b et de jeu de ces tables sont celles de la denture 20°.
-      var shortTitle = props.table.title.split(" — ")[0] + (angle === 14.5 ? " (valeurs 20°)" : "");
-      Object.keys(props.table.index).sort(function (a, b) {
-        return props.table.index[a] - props.table.index[b];
-      }).forEach(function (field) {
-        rows.push([shortTitle + " : " + (props.table.labels[field] || field),
-          props.row[props.table.index[field]]]);
-      });
-    }
-    var chordal = Tables.lookup(angle === 14.5 ? "table10-145" : "table10-20", { N: N });
-    if (chordal) {
-      var m1 = num(chordal.values.M);
-      rows.push(["Table 10 : M — à la corde, 1 D.P.", chordal.values.M]);
-      if (isFinite(m1)) rows.push(["M — à la corde = table / P, sans jeu (pouce)", fmt(m1 / P)]);
-    }
-    var over = Tables.lookup(angle === 14.5 ? "table11-145" : "table11-20", { N: N });
-    if (over) rows.push(["Table 11 : k — dents enjambées", over.values.k]);
-    var pins = Tables.lookup(N % 2 === 0 ? "pins-even" : "pins-odd", { N: N });
-    if (pins) {
-      var raw = num(pins.values[pinField(angle)]);
-      if (isFinite(raw)) {
-        rows.push(["Piges (table " + (N % 2 === 0 ? "1, pair" : "2, impair") +
-          ") : M — Mth = table / P (pouce)", fmt(raw / P)]);
-      }
-    }
-    var cutter = Tables.lookup("cutters-standard", { N: N });
-    if (cutter) rows.push(["Fraises (p. 2231) : n° — fraise", cutter.values.cutter]);
-    return rows;
-  }
-
-  function renderResults(gear, angle) {
-    var lines = [
-      ["Pas diamétral (P)", fmt(gear.diametralPitch), "1/pouce"],
-      ["Nombre de dents (N)", String(gear.teeth), ""],
-      ["Pas circulaire (p)", fmt(gear.circularPitch), "pouce"],
-      ["Module", fmt(gear.module, 3), "mm"],
-      ["Diamètre primitif", fmt(gear.pitchDiameter), "pouce"],
-      ["Diamètre extérieur", fmt(gear.outsideDiameter), "pouce"],
-      ["Diamètre de pied", fmt(gear.rootDiameter), "pouce"],
-      ["Addendum", fmt(gear.addendum), "pouce"],
-      ["Dédendum", fmt(gear.dedendum), "pouce"],
-      ["Profondeur totale", fmt(gear.wholeDepth), "pouce"],
-      ["Jeu (clearance)", fmt(gear.clearance), "pouce"],
-      ["Épaisseur de dent (arc primitif)", fmt(gear.toothThickness), "pouce"]
-    ];
-
-    els.resultsTable.innerHTML = "<tbody>" + lines.map(function (line) {
-      return '<tr><th>' + line[0] + '</th><td class="value">' + line[1] +
-        '</td><td class="unit">' + line[2] + "</td></tr>";
-    }).join("") + "</tbody>";
-
-    var tableRows = tableValues(gear.diametralPitch, gear.teeth, angle);
-    state.last = { lines: lines, tableRows: tableRows };
-
-    if (tableRows.length > 0) {
-      var rowsHtml = "";
-      tableRows.forEach(function (row) {
-        rowsHtml += "<tr><th>" + escapeHtml(row[0]) + '</th><td class="value">' +
-          escapeHtml(row[1]) + "</td></tr>";
-      });
-      els.matchTable.innerHTML = "<tbody>" + rowsHtml + "</tbody>";
-      els.match.hidden = false;
-    } else {
-      els.match.hidden = true;
-    }
-
-    els.results.hidden = false;
-  }
-
-  function compute(event) {
-    if (event) event.preventDefault();
-
-    var P = num(els.dp.value);
-    var N = num(els.teeth.value);
-
-    if (!isFinite(P) || P <= 0) {
-      setMessage("Le pas diamétral doit être un nombre supérieur à 0.", "error");
-      els.results.hidden = true;
-      return;
-    }
-    if (!isFinite(N) || N < 1 || Math.round(N) !== N) {
-      setMessage("Le nombre de dents doit être un entier supérieur ou égal à 1.", "error");
-      els.results.hidden = true;
-      return;
-    }
-
-    setMessage("", "");
-
-    var angle = parseFloat(els.gearAngle.value) === 14.5 ? 14.5 : 20;
-    var gear = Calculs.gearSpur(P, N, angle);
-    Tables.setContext({
-      P: P, N: N, D: gear.pitchDiameter, p: gear.circularPitch, phi: angle,
-      a: gear.addendum, b: gear.dedendum, aG: gear.addendum, aP: gear.addendum,
-      ht: gear.wholeDepth, hk: gear.addendum + gear.addendum, c: gear.clearance
-    });
-    renderResults(gear, angle);
-    if (state.table && state.table.kind === "formulas") renderFormulaTable(state.table);
-    if (!Tables.lookup("table3", { P: P }) && !Tables.lookup("table5", { P: P })) {
-      setMessage("Pas de valeurs de table pour P = " + fmt(P) + " : les cotes sont calculées, mais les valeurs de table sont absentes.", "");
-    }
-  }
-
-  // Exporte le résultat affiché : cotes calculées puis valeurs des tables.
-  function exportResult() {
-    var last = state.last;
-    if (!last) return;
-    var rows = [["Paramètre", "Valeur", "Unité"]];
-    last.lines.forEach(function (line) { rows.push([line[0], line[1], line[2]]); });
-    rows.push([]);
-    if (last.tableRows && last.tableRows.length > 0) {
-      rows.push(["Valeurs des tables", "", ""]);
-      last.tableRows.forEach(function (row) { rows.push([row[0], row[1], ""]); });
-    } else {
-      rows.push(["Valeurs des tables", "absentes pour ce pas", ""]);
-    }
-    var text = rows.map(function (row) { return row.map(csvCell).join(","); }).join("\r\n") + "\r\n";
-    var blob = new Blob(["\uFEFF" + text], { type: "text/csv;charset=utf-8" });
-    var url = URL.createObjectURL(blob);
-    var link = document.createElement("a");
-    link.href = url;
-    link.download = "resultat_engrenage.csv";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }
-
   // ---------- train de deux roues ----------
 
   var ITEMS = [
-    ["Nombre de dents (N)", "teeth", 0],
-    ["Diamètre extérieur D0", "outsideDiameter", 4],
+    ["Nombre de dents N", "teeth", 0],
+    ["Diamètre extérieur D<sub>0</sub>", "outsideDiameter", 4],
     ["Addendum a", "addendum", 4],
-    ["Dédendum b", "dedendum", 4],
-    ["Profondeur totale ht", "wholeDepth", 4],
+    ["Dedendum b", "dedendum", 4],
+    ["Profondeur totale h<sub>t</sub>", "wholeDepth", 4],
     ["Pas circulaire p", "circularPitch", 4],
-    ["Épaisseur d'arc t", "toothThickness", 4],
+    ["Épaisseur circulaire t", "toothThickness", 4],
     ["Épaisseur à la corde T", "chordalThickness", 4],
     ["Saillie à la corde H", "chordalAddendum", 4],
     ["Numéro de fraise", "cutter", 0],
-    ["Diamètre de pige", "pinDiameter", 4],
+    ["Diamètre de pige W", "pinDiameter", 4],
     ["Mesure sur piges M", "pinMeasurement", 4],
     ["M maxi", "pinMaxThinned", 4],
     ["M mini", "pinMinThinned", 4],
-    ["Courant ΔM (par 0,001 po)", "deltaM", 5],
-    ["Nombre de dents enjambées k", "overTeeth", 0],
+    ["ΔM (par 0,001 po)", "deltaM", 5],
+    ["Dents enjambées k", "overTeeth", 0],
     ["Mesure entre dents", "overTeethMeasurement", 4]
   ];
 
@@ -483,16 +302,18 @@
     msg.hidden = true;
     applyTables(result.pinion, result.pinionTeeth, angle, P, "pinion");
     applyTables(result.gear, result.gearTeeth, angle, P, "gear");
+    var dedendum = (angle === 14.5 ? 1.157 : 1.25) / P;
     Tables.setContext({
       P: P, p: Math.PI / P, phi: angle, C: C, mG: result.mG,
       NP: result.pinionTeeth, NG: result.gearTeeth,
       DP: result.pinionPitchDiameter, DG: result.gearPitchDiameter,
       N: result.pinionTeeth, D: result.pinionPitchDiameter,
-      a: 1 / P, b: 1.25 / P, aG: 1 / P, aP: 1 / P, ht: 2.25 / P, hk: 2 / P, c: 0.25 / P
+      a: 1 / P, b: dedendum, aG: 1 / P, aP: 1 / P,
+      ht: 1 / P + dedendum, hk: 2 / P, c: dedendum - 1 / P
     });
     if (state.table && state.table.kind === "formulas") renderFormulaTable(state.table);
     var html = "<thead><tr><th>Item</th><th>Pignon</th><th>Roue</th></tr></thead><tbody>";
-    html += "<tr><td>Diamètre primitif (pouce)</td><td>" + fmt(result.pinionPitchDiameter) + "</td><td>" + fmt(result.gearPitchDiameter) + "</td></tr>";
+    html += "<tr><td>Diamètre primitif D (pouce)</td><td>" + fmt(result.pinionPitchDiameter) + "</td><td>" + fmt(result.gearPitchDiameter) + "</td></tr>";
     ITEMS.forEach(function (item) {
       html += "<tr><td>" + item[0] + "</td><td>" + fmtItem(result.pinion[item[1]], item[2]) + "</td><td>" + fmtItem(result.gear[item[1]], item[2]) + "</td></tr>";
     });
@@ -530,15 +351,6 @@
   // ---------- démarrage ----------
 
   document.getElementById("train-form").addEventListener("submit", computeTrain);
-  els.form.addEventListener("submit", compute);
-
-  els.resetBtn.addEventListener("click", function () {
-    els.form.reset();
-    setMessage("", "");
-    els.results.hidden = true;
-  });
-
-  els.exportResultBtn.addEventListener("click", exportResult);
   els.tableSearch.addEventListener("click", searchTable);
   els.tableQuery.addEventListener("keydown", function (event) {
     if (event.key === "Enter") { event.preventDefault(); searchTable(); }
@@ -547,6 +359,7 @@
 
   Tables.load().then(function (result) {
     state.tables = result.tables;
+    if (window.renderMath) window.renderMath(document);
     if (result.errors.length > 0) {
       els.csvStatus.className = "message error";
       els.csvStatus.textContent = "Tables non chargées : " + result.errors.join(" ; ");

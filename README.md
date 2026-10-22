@@ -1,14 +1,17 @@
 # Manuel interactif — Engrenages
 
-Petit site statique (HTML/CSS/JS, sans build) : on saisit un pas diamétral et un
-nombre de dents, et on obtient les cotes de l'engrenage. Les données de référence
-viennent des tables du Machinery's Handbook décrites dans `tables/registry.json` ;
-le résultat affiché est exportable en CSV.
+Petit site statique (HTML/CSS/JS, sans build) : on saisit le rapport de
+transmission, l'entraxe, le pas diamétral et l'angle de pression d'un train, et
+on obtient les cotes du pignon et de la roue, du diamètre primitif à la mesure
+sur piges. Les données de référence viennent des tables du Machinery's Handbook
+décrites dans `tables/registry.json`, consultables dans la section « Données de
+référence ».
 
 ## Lancer en local
 
-Le chargement du CSV passe par `fetch`, donc il faut un serveur local
-(ouvrir `index.html` en double-clic ne suffit pas) :
+Ouvrir `index.html` en double-clic fonctionne : les tables sont aussi intégrées
+dans `tables_embedded.js`, utilisé quand le navigateur refuse `fetch` sur
+`file://`. Pour recharger les données depuis les fichiers, servir le dossier :
 
 ```sh
 python -m http.server 8000
@@ -16,9 +19,16 @@ python -m http.server 8000
 
 Puis ouvrir http://localhost:8000
 
-Les scripts portent un numéro de version (`app.js?v=4`) : après une modification,
+Les scripts portent un numéro de version (`app.js?v=5`) : après une modification,
 incrémenter ce numéro dans `index.html` évite qu'un navigateur garde l'ancien
 fichier en cache.
+
+Après avoir modifié `tables/registry.json` ou un CSV, régénérer la copie
+intégrée :
+
+```sh
+python tools/embed_tables.py
+```
 
 ## Publier sur GitHub Pages
 
@@ -33,10 +43,11 @@ Aucune étape de compilation, aucun secret : tout est public.
 
 | Fichier | Rôle |
 | --- | --- |
-| `index.html` | Structure de la page (formulaire, résultats, tables de référence) |
+| `index.html` | Structure de la page (train d'engrenages, tables de référence) |
 | `calculs.js` | Formules pures, sans DOM — c'est ici qu'on ajoute des calculs |
 | `tables.js` | Chargement des tables du registre, lecture CSV, évaluation des formules |
 | `app.js` | Lecture des tables, affichage, export du résultat |
+| `math.js` | Rendu des formules LaTeX (KaTeX), avec repli sur le texte lisible |
 | `style.css` | Mise en forme |
 | `table_engrenages.csv` | Données de référence |
 | `tables/registry.json` | Liste des tables du Handbook (valeurs et formules) |
