@@ -20,21 +20,28 @@
     matchTable: document.getElementById("match-table"),
     csvStatus: document.getElementById("csv-status"),
     tableSelect: document.getElementById("table-select"),
+    tableQuery: document.getElementById("table-query"),
+    tableSearch: document.getElementById("table-search"),
+    tableFound: document.getElementById("table-found"),
+    formulaList: document.getElementById("formula-list"),
+    tableWrap: document.getElementById("table-wrap"),
     exportResultBtn: document.getElementById("export-result"),
     pitchTable: document.getElementById("pitch-table"),
     historyStatus: document.getElementById("history-status"),
     historyTable: document.getElementById("history-table"),
     exportBtn: document.getElementById("export"),
     clearBtn: document.getElementById("clear"),
-    resetBtn: document.getElementById("reset")
+    resetBtn: document.getElementById("reset"),
+    gearAngle: document.getElementById("gear-angle")
   };
 
   var state = {
     headers: [],
     rows: [],       // cellules dans l'ordre du fichier
+    tables: [],     // tables du registre (Tables.load)
+    table: null,    // table affichée, si elle vient du registre
     history: [],
     last: null      // dernier résultat affiché, pour l'export
-
   };
 
   // ---------- utilitaires ----------
@@ -111,11 +118,12 @@
     els.pitchTable.innerHTML = html;
   }
 
-  function fillPitchOptions() {
+  // at = colonne du pas diamétral dans la table affichée (null : on la déduit du pas circulaire).
+  function fillPitchOptions(at) {
     var seen = {};
     var options = "";
     state.rows.forEach(function (row) {
-      var p = rowPitch(row);
+      var p = (at === null || at === undefined) ? rowPitch(row) : num(row[at]);
       if (!isFinite(p) || p <= 0) return;
       var key = Math.round(p * 10000);
       if (seen[key]) return;
@@ -146,7 +154,7 @@
       els.csvStatus.className = "";
       els.csvStatus.textContent = parsed.rows.length + " lignes chargées depuis " + path + ".";
       renderReferenceTable();
-      fillPitchOptions();
+      fillPitchOptions(null);
     } catch (error) {
       els.csvStatus.className = "message error";
       els.csvStatus.textContent = "Impossible de charger " + path + " (" + error.message + "). " +
@@ -154,51 +162,182 @@
     }
   }
 
-  // Tables enregistrées depuis le panneau OCR (dossier tables/, listées dans tables/index.json).
-  // Liste = tables/registry.json (tables déclarées) + tables/index.json (tables enregistrées), sans doublon.
-  async function loadTableList() {
-    var files = [];
-    var sources = ["tables/registry.json", "tables/index.json"];
-    for (var s = 0; s < sources.length; s++) {
-      try {
-        var response = await fetch(sources[s], { cache: "no-cache" });
-        if (!response.ok) continue;
-        var entries = await response.json();
-        entries.forEach(function (entry) {
-          if (entry.file && files.indexOf(entry.file) < 0) files.push(entry.file);
-        });
-      } catch (error) {
-        // Source absente : on continue avec les autres.
-      }
-    }
+  // ---------- tables du Handbook ----------
+
+  // Menu : les tables du registre (avec leur titre) puis celles enregistrées depuis le panneau OCR.
+  async function buildTableMenu() {
     var options = "";
-    files.forEach(function (file) {
-      var path = "tables/" + file;
-      options += '<option value="' + escapeHtml(path) + '">' + escapeHtml(path) + "</option>";
+    var declared = {};
+    state.tables.forEach(function (table) {
+      if (table.file) declared["tables/" + table.file] = true;
+      options += '<option value="id:' + escapeHtml(table.id) + '">' + escapeHtml(table.title) + "</option>";
     });
-    if (!options) options = '<option value="' + escapeHtml(CSV_PATH) + '">' + escapeHtml(CSV_PATH) + "</option>";
+    try {
+      var response = await fetch("tables/index.json", { cache: "no-cache" });
+      if (response.ok) {
+        (await response.json()).forEach(function (entry) {
+          if (!entry.file || declared["tables/" + entry.file]) return;
+          options += '<option value="file:' + escapeHtml("tables/" + entry.file) + '">' +
+            escapeHtml("OCR — " + entry.file) + "</option>";
+        });
+      }
+    } catch (error) {
+      // Source absente : on garde les tables du registre.
+    }
+    if (!options) options = '<option value="file:' + escapeHtml(CSV_PATH) + '">' + escapeHtml(CSV_PATH) + "</option>";
     els.tableSelect.innerHTML = options;
-    els.tableSelect.addEventListener("change", function () {
-      loadReference(els.tableSelect.value);
+    showTable(els.tableSelect.value);
+  }
+
+  function showTable(value) {
+    if (!value) return;
+    if (value.indexOf("id:") === 0) {
+      var table = Tables.getById(value.slice(3));
+      if (!table) return;
+      state.table = table;
+      if (table.kind === "formulas") renderFormulaTable(table); else renderCsvTable(table);
+    } else {
+      state.table = null;
+      loadReference(value.slice(5));
+    }
+    els.tableFound.hidden = true;
+    els.tableQuery.value = "";
+  }
+
+  function renderCsvTable(table) {
+    state.headers = table.headers;
+    state.rows = table.rows;
+    els.formulaList.hidden = true;
+    els.formulaList.innerHTML = "";
+    els.tableWrap.hidden = false;
+    els.csvStatus.className = "";
+    els.csvStatus.textContent = table.title + " — " + table.rows.length + " lignes.";
+    renderReferenceTable();
+    fillPitchOptions(table.index.P !== undefined ? table.index.P : null);
+  }
+
+  // Table de formules : chaque ligne est évaluée avec les valeurs du dernier calcul.
+  function renderFormulaTable(table) {
+    state.headers = [];
+    state.rows = [];
+    var count = 0;
+    var html = "";
+    table.groups.forEach(function (group) {
+      if (group.name) html += "<h4>" + escapeHtml(group.name) + "</h4>";
+      html += '<table class="grid formula"><thead><tr><th>Élément</th><th>Formule</th>' +
+        "<th>Valeur</th></tr></thead><tbody>";
+      group.rows.forEach(function (row) {
+        var first = true;
+        row.variants.forEach(function (variant) {
+          var value = "—";
+          var reason = "calcule d'abord un engrenage";
+          try {
+            value = fmt(Tables.evaluate(variant.expr), 4);
+            reason = "";
+          } catch (error) {
+            reason = error.message;
+          }
+          html += "<tr><th>" + (first ? escapeHtml(row.label) : "") + "</th><td>" +
+            escapeHtml(variant.display) + '</td><td class="value"' +
+            (reason ? ' title="' + escapeHtml(reason) + '"' : "") + ">" + value + "</td></tr>";
+          first = false;
+          count++;
+        });
+      });
+      html += "</tbody></table>";
     });
+    els.tableWrap.hidden = true;
+    els.formulaList.hidden = false;
+    els.formulaList.innerHTML = html;
+    els.csvStatus.className = "";
+    els.csvStatus.textContent = table.title + " — " + count +
+      " formules. Les valeurs suivent le dernier calcul (P, N, p, angle).";
+  }
+
+  function searchTable() {
+    var table = state.table;
+    if (!table) return;
+    if (table.kind === "formulas") {
+      els.tableFound.className = "message";
+      els.tableFound.textContent = "Table de formules : les valeurs sont déjà calculées à droite.";
+      els.tableFound.hidden = false;
+      return;
+    }
+    var value = num(els.tableQuery.value);
+    if (!isFinite(value)) {
+      els.tableFound.className = "message error";
+      els.tableFound.textContent = "Entre une valeur à chercher (" + table.lookup + ").";
+      els.tableFound.hidden = false;
+      return;
+    }
+    var inputs = {};
+    inputs[table.lookup] = value;
+    var found = Tables.lookup(table.id, inputs);
+    if (!found) {
+      els.tableFound.className = "message error";
+      els.tableFound.textContent = table.title + " : aucune ligne pour " + table.lookup + " = " + value + ".";
+      els.tableFound.hidden = false;
+      return;
+    }
+    var parts = [];
+    Object.keys(found.values).forEach(function (field) {
+      if (field === table.lookup) return;
+      parts.push(found.table.headers[found.table.index[field]] + " = " + found.values[field]);
+    });
+    var keyLabels = { N: "nombre de dents", P: "pas diamétral" };
+    els.tableFound.className = "message";
+    els.tableFound.textContent = table.title + " : " + (keyLabels[table.lookup] || table.lookup) +
+      " = " + value + " → " + parts.join(" ; ");
+    els.tableFound.hidden = false;
   }
 
   // ---------- calculs ----------
 
-  function findTableRow(P) {
-    var best = null;
-    var bestGap = Infinity;
-    state.rows.forEach(function (row) {
-      var gap = Math.abs(rowPitch(row) - P);
-      if (gap < bestGap) {
-        bestGap = gap;
-        best = row;
-      }
-    });
-    return bestGap <= 0.0005 ? best : null;   // tolérance sur le pas diamétral
+  // Colonne des tables de piges selon l'angle de pression.
+  function pinField(angle) {
+    if (angle === 14.5) return "M145";
+    if (angle === 17.5) return "M175";
+    if (angle === 25) return "M25";
+    if (angle === 30) return "M30";
+    return "M20";
   }
 
-  function renderResults(gear, tableRow) {
+  // Cotes lues dans les tables du registre (protocole du guide, §6 à §8).
+  function tableValues(P, N, angle) {
+    var rows = [];
+    // Table 3 pour les pas grossiers, Table 5 pour les pas fins (les deux vont jusqu'à P = 20).
+    var props = P > 20 ?
+      (Tables.lookup("table5", { P: P }) || Tables.lookup("table3", { P: P })) :
+      (Tables.lookup("table3", { P: P }) || Tables.lookup("table5", { P: P }));
+    if (props) {
+      // Les présélections de b et de jeu de ces tables sont celles de la denture 20°.
+      var shortTitle = props.table.title.split(" — ")[0] + (angle === 14.5 ? " (valeurs 20°)" : "");
+      props.table.headers.forEach(function (header, i) {
+        rows.push([shortTitle + " — " + header, props.row[i]]);
+      });
+    }
+    var chordal = Tables.lookup(angle === 14.5 ? "table10-145" : "table10-20", { N: N });
+    if (chordal) {
+      var m1 = num(chordal.values.M);
+      rows.push(["Table 10 — M à la corde, 1 D.P. (pouce)", chordal.values.M]);
+      if (isFinite(m1)) rows.push(["M à la corde = table / P (pouce, sans jeu)", fmt(m1 / P)]);
+    }
+    var over = Tables.lookup(angle === 14.5 ? "table11-145" : "table11-20", { N: N });
+    if (over) rows.push(["Table 11 — dents à enjamber k", over.values.k]);
+    var pins = Tables.lookup(N % 2 === 0 ? "pins-even" : "pins-odd", { N: N });
+    if (pins) {
+      var raw = num(pins.values[pinField(angle)]);
+      if (isFinite(raw)) {
+        rows.push(["Piges (table " + (N % 2 === 0 ? "1, pair" : "2, impair") +
+          ") — Mth = table / P (pouce)", fmt(raw / P)]);
+      }
+    }
+    var cutter = Tables.lookup("cutters-standard", { N: N });
+    if (cutter) rows.push(["Série de fraises (p. 2231) — numéro", cutter.values.cutter]);
+    return rows;
+  }
+
+  function renderResults(gear, angle) {
     var lines = [
       ["Pas diamétral (P)", fmt(gear.diametralPitch), "1/pouce"],
       ["Nombre de dents (N)", String(gear.teeth), ""],
@@ -219,14 +358,15 @@
         '</td><td class="unit">' + line[2] + "</td></tr>";
     }).join("") + "</tbody>";
 
-    state.last = { lines: lines, tableRow: tableRow };
+    var tableRows = tableValues(gear.diametralPitch, gear.teeth, angle);
+    state.last = { lines: lines, tableRows: tableRows };
 
-    if (tableRow) {
+    if (tableRows.length > 0) {
       var rowsHtml = "";
-      for (var i = 2; i < state.headers.length; i++) {
-        rowsHtml += "<tr><th>" + escapeHtml(state.headers[i]) + '</th><td class="value">' +
-          escapeHtml(tableRow[i]) + "</td></tr>";
-      }
+      tableRows.forEach(function (row) {
+        rowsHtml += "<tr><th>" + escapeHtml(row[0]) + '</th><td class="value">' +
+          escapeHtml(row[1]) + "</td></tr>";
+      });
       els.matchTable.innerHTML = "<tbody>" + rowsHtml + "</tbody>";
       els.match.hidden = false;
     } else {
@@ -255,10 +395,16 @@
 
     setMessage("", "");
 
-    var gear = Calculs.gearSpur(P, N);
-    var tableRow = findTableRow(P);
-    renderResults(gear, tableRow);
-    if (!tableRow) {
+    var angle = parseFloat(els.gearAngle.value) === 14.5 ? 14.5 : 20;
+    var gear = Calculs.gearSpur(P, N, angle);
+    Tables.setContext({
+      P: P, N: N, D: gear.pitchDiameter, p: gear.circularPitch, phi: angle,
+      a: gear.addendum, b: gear.dedendum, aG: gear.addendum, aP: gear.addendum,
+      ht: gear.wholeDepth, hk: gear.addendum + gear.addendum, c: gear.clearance
+    });
+    renderResults(gear, angle);
+    if (state.table && state.table.kind === "formulas") renderFormulaTable(state.table);
+    if (!Tables.lookup("table3", { P: P }) && !Tables.lookup("table5", { P: P })) {
       setMessage("Pas de valeurs de table pour P = " + fmt(P) + " : les cotes sont calculées, mais les valeurs de table sont absentes.", "");
     }
     addHistory(gear);
@@ -357,11 +503,9 @@
     var rows = [["Paramètre", "Valeur", "Unité"]];
     last.lines.forEach(function (line) { rows.push([line[0], line[1], line[2]]); });
     rows.push([]);
-    if (last.tableRow) {
-      rows.push(["Valeurs de la table", "", ""]);
-      for (var i = 2; i < state.headers.length; i++) {
-        rows.push([state.headers[i], last.tableRow[i], ""]);
-      }
+    if (last.tableRows && last.tableRows.length > 0) {
+      rows.push(["Valeurs des tables", "", ""]);
+      last.tableRows.forEach(function (row) { rows.push([row[0], row[1], ""]); });
     } else {
       rows.push(["Valeurs de la table", "absentes pour ce pas", ""]);
     }
@@ -400,8 +544,9 @@
     ["Numéro de fraise", "cutter", 0],
     ["Diamètre de pige", "pinDiameter", 4],
     ["Mesure sur piges M", "pinMeasurement", 4],
-    ["M maxi (Mth − 3M)", "pinMaxThinned", 4],
-    ["M mini (Mth − 5M)", "pinMinThinned", 4],
+    ["M maxi", "pinMaxThinned", 4],
+    ["M mini", "pinMinThinned", 4],
+    ["Courant ΔM (par 0,001 po)", "deltaM", 5],
     ["Nombre de dents enjambées k", "overTeeth", 0],
     ["Mesure entre dents", "overTeethMeasurement", 4]
   ];
@@ -423,6 +568,16 @@
       return;
     }
     msg.hidden = true;
+    applyTables(result.pinion, result.pinionTeeth, angle, P, "pinion");
+    applyTables(result.gear, result.gearTeeth, angle, P, "gear");
+    Tables.setContext({
+      P: P, p: Math.PI / P, phi: angle, C: C, mG: result.mG,
+      NP: result.pinionTeeth, NG: result.gearTeeth,
+      DP: result.pinionPitchDiameter, DG: result.gearPitchDiameter,
+      N: result.pinionTeeth, D: result.pinionPitchDiameter,
+      a: 1 / P, b: 1.25 / P, aG: 1 / P, aP: 1 / P, ht: 2.25 / P, hk: 2 / P, c: 0.25 / P
+    });
+    if (state.table && state.table.kind === "formulas") renderFormulaTable(state.table);
     var html = "<thead><tr><th>Item</th><th>Pignon</th><th>Roue</th></tr></thead><tbody>";
     html += "<tr><td>Diamètre primitif (pouce)</td><td>" + fmt(result.pinionPitchDiameter) + "</td><td>" + fmt(result.gearPitchDiameter) + "</td></tr>";
     ITEMS.forEach(function (item) {
@@ -431,6 +586,28 @@
     html += "</tbody>";
     document.getElementById("train-table").innerHTML = html;
     box.hidden = false;
+  }
+
+  // Numéro de fraise, dents à enjamber et mesure sur piges lus dans les tables du Handbook.
+  function applyTables(item, teeth, angle, P, role) {
+    var over = Tables.lookup(angle === 14.5 ? "table11-145" : "table11-20", { N: teeth });
+    if (over) item.overTeeth = num(over.values.k);
+    var cutter = Tables.lookup("cutters-standard", { N: teeth });
+    if (cutter) item.cutter = cutter.values.cutter;
+    // Tables 1 et 2 (p. 2303-2306) : pair ou impair, puis /P (guide §6.2).
+    var pins = Tables.lookup(teeth % 2 === 0 ? "pins-even" : "pins-odd", { N: teeth });
+    if (!pins) return;
+    var raw = num(pins.values[pinField(angle)]);
+    if (!isFinite(raw)) return;
+    var mth = raw / P;
+    item.pinMeasurement = mth;
+    if (role === "pinion") {
+      item.pinMaxThinned = mth;                 // pignon intact : Mth
+      item.pinMinThinned = mth - 2 * item.deltaM;
+    } else {
+      item.pinMaxThinned = mth - 3 * item.deltaM; // roue amincie
+      item.pinMinThinned = mth - 5 * item.deltaM;
+    }
   }
 
   function fmtItem(value, digits) {
@@ -451,8 +628,19 @@
   els.exportBtn.addEventListener("click", exportHistory);
   els.exportResultBtn.addEventListener("click", exportResult);
   els.clearBtn.addEventListener("click", clearHistory);
+  els.tableSearch.addEventListener("click", searchTable);
+  els.tableQuery.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") { event.preventDefault(); searchTable(); }
+  });
+  els.tableSelect.addEventListener("change", function () { showTable(els.tableSelect.value); });
 
   loadHistory();
-  loadReference();
-  loadTableList();
+  Tables.load().then(function (result) {
+    state.tables = result.tables;
+    if (result.errors.length > 0) {
+      els.csvStatus.className = "message error";
+      els.csvStatus.textContent = "Tables non chargées : " + result.errors.join(" ; ");
+    }
+    buildTableMenu();
+  });
 })();

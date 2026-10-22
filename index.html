@@ -25,6 +25,13 @@
           <input id="teeth" name="teeth" type="number" step="1" min="1" required>
         </label>
 
+        <label for="gear-angle">Angle de pression
+          <select id="gear-angle" name="gear-angle">
+            <option value="14.5">14,5°</option>
+            <option value="20" selected>20°</option>
+          </select>
+        </label>
+
         <div class="actions">
           <button type="submit">Calculer</button>
           <button type="button" id="reset" class="ghost">Réinitialiser</button>
@@ -47,7 +54,7 @@
     </section>
 
     <section class="card">
-      <h2>Train d'engrenages (19 items)</h2>
+      <h2>Train d'engrenages (pignon et roue)</h2>
       <form id="train-form" autocomplete="off">
         <label for="mg">Rapport de transmission (mG)
           <input id="mg" name="mg" type="number" step="any" min="0" required>
@@ -72,6 +79,8 @@
       <div id="train-results" hidden>
         <table class="grid" id="train-table"></table>
       </div>
+      <p class="sub">M maxi et M mini : roue amincie Mth − 3ΔM et Mth − 5ΔM ; pignon intact Mth et Mth − 2ΔM
+        (ΔM = 0,001 cos φ / sin α, guide §7).</p>
       <figure class="nomenclature">
         <div id="nomenclature-svg"></div>
         <figcaption>Nomenclature des dents d'engrenage (Table 1, p. 2212) : cliquer un terme</figcaption>
@@ -83,11 +92,15 @@
       <h2>Données de référence</h2>
       <p id="csv-status">Chargement…</p>
       <p><label>Table utilisée : <select id="table-select"></select></label></p>
-      <details>
+      <p><label>Chercher : <input id="table-query" type="number" step="any"></label>
+        <button type="button" id="table-search" class="ghost">Chercher</button></p>
+      <p id="table-found" class="message" hidden></p>
+      <details open>
         <summary>Voir la table</summary>
-        <div class="table-wrap">
+        <div id="table-wrap" class="table-wrap">
           <table class="grid" id="pitch-table"></table>
         </div>
+        <div id="formula-list" class="formula-list" hidden></div>
       </details>
     </section>
 
@@ -133,9 +146,10 @@
     <p>Site statique — aucune donnée n'est envoyée sur un serveur. Les calculs sont conservés dans le navigateur (localStorage).</p>
   </footer>
 
-  <script src="calculs.js"></script>
+  <script src="calculs.js?v=2"></script>
   <script src="tables_embedded.js"></script>
-  <script src="app.js"></script>
+  <script src="tables.js?v=2"></script>
+  <script src="app.js?v=2"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="ocr_table.js"></script>
   <script src="ocr.js"></script>

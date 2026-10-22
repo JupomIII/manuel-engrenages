@@ -7,24 +7,28 @@
   "use strict";
 
   /*
-   * Engrenage droit à denture standard (profondeur de travail 2/P).
+   * Engrenage droit à denture commune, pleine profondeur.
    * Toutes les cotes sont en pouces, le pas diamétral P est en 1/pouce.
+   * Le creux dépend de l'angle de pression (guide §4.3) : 1,157/P à 14½°, 1,250/P à 20°.
    */
-  function gearSpur(diametralPitch, teeth) {
+  function gearSpur(diametralPitch, teeth, pressureAngleDeg) {
     var P = diametralPitch;
     var N = teeth;
+    var angle = pressureAngleDeg === 14.5 ? 14.5 : 20;
     var circularPitch = Math.PI / P;
     var addendum = 1 / P;
-    var dedendum = 1.25 / P;
+    var dedendum = (angle === 14.5 ? 1.157 : 1.25) / P;
+    var pitchDiameter = N / P;
 
     return {
       diametralPitch: P,
       teeth: N,
+      pressureAngle: angle,
       circularPitch: circularPitch,
       module: 25.4 / P,
-      pitchDiameter: N / P,
+      pitchDiameter: pitchDiameter,
       outsideDiameter: (N + 2) / P,
-      rootDiameter: (N - 2.5) / P,
+      rootDiameter: pitchDiameter - 2 * dedendum,
       addendum: addendum,
       dedendum: dedendum,
       wholeDepth: addendum + dedendum,
@@ -41,7 +45,7 @@
   function gearChordal(diametralPitch, teeth, pressureAngleDeg) {
     var P = diametralPitch;
     var N = teeth;
-    var dedendumFactor = pressureAngleDeg === 20 ? 1.25 : 1.157;
+    var dedendumFactor = pressureAngleDeg === 14.5 ? 1.157 : 1.25;
     var half = (90 / N) * Math.PI / 180;
     var pitchDiameter = N / P;
     var addendum = 1 / P;
@@ -93,6 +97,16 @@
     return Math.cos(a) * ((k - 0.5) * Math.PI + teeth * invA) / diametralPitch;
   }
 
+  /*
+   * Sensibilité de la mesure sur piges (guide §7) : variation de M pour 0,001 po
+   * d'épaisseur de dent en moins, ΔM = 0,001 cos φ / sin α. On la tire de la
+   * formule des piges, ce qui évite une table intermédiaire.
+   */
+  function deltaM(diametralPitch, teeth, pressureAngleDeg) {
+    return pinMeasurement(diametralPitch, teeth, pressureAngleDeg, 0) -
+      pinMeasurement(diametralPitch, teeth, pressureAngleDeg, 0.001);
+  }
+
   // Numéro de fraise (M.H. p. 2231) selon le nombre de dents.
   function cutterNumber(teeth) {
     // [dents max, n° de fraise] ; 135 et plus = crémaillère (n° 1).
@@ -119,6 +133,8 @@
     var chordal = gearChordal(P, N, angle);
     var p = Math.PI / P;
     var pin = 1.728 / P;
+    var mth = pinMeasurement(P, N, angle, 0);
+    var dm = deltaM(P, N, angle);
     return {
       teeth: N,
       outsideDiameter: (N + 2) / P,
@@ -131,9 +147,14 @@
       chordalAddendum: chordal.chordalAddendum,
       cutter: cutterNumber(N),
       pinDiameter: pin,
-      pinMeasurement: pinMeasurement(P, N, angle, 0),
-      pinMaxThinned: pinMeasurement(P, N, angle, 0.003),
-      pinMinThinned: pinMeasurement(P, N, angle, 0.005),
+      pinMeasurement: mth,
+      deltaM: dm,
+      // Roue amincie : M maxi = Mth − 3ΔM, M mini = Mth − 5ΔM (guide §7).
+      pinMaxThinned: mth - 3 * dm,
+      pinMinThinned: mth - 5 * dm,
+      // Pignon intact : M maxi = Mth, M mini = Mth − 2ΔM.
+      pinIntact: mth,
+      pinMinIntact: mth - 2 * dm,
       overTeeth: teethOver(N, angle),
       overTeethMeasurement: overTeethMeasurement(P, N, angle)
     };
@@ -180,6 +201,7 @@
     gearItems: gearItems,
     calculateTrain: calculateTrain,
     pinMeasurement: pinMeasurement,
+    deltaM: deltaM,
     overTeethMeasurement: overTeethMeasurement,
     teethOver: teethOver,
     cutterNumber: cutterNumber,
