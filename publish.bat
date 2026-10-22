@@ -23,8 +23,9 @@ if not exist ".git" (
   if errorlevel 1 goto :fail
 )
 
-rem Only the site files are published (no stray folders).
-git -c core.autocrlf=false add README.md app.js calculs.js index.html style.css table_engrenages.csv publish.bat
+rem Only the site files are published (no stray folders, no PDFs, no images).
+git -c core.autocrlf=false add README.md index.html style.css app.js calculs.js tables.js tables_embedded.js math.js nomenclature.js ocr.js ocr_table.js publish.bat tables tools
+if errorlevel 1 goto :fail
 if errorlevel 1 goto :fail
 
 git diff --cached --quiet

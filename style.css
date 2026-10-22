@@ -265,6 +265,14 @@ table.grid tbody tr:hover td { background: #f6ece4; }
 
 table.grid td.value { text-align: right; }
 
+/* Lignes cliquables : la ligne dit quand utiliser la formule ou le symbole. */
+.formula-row, .symbol-row { cursor: pointer; }
+
+.formula-row:focus-visible, .symbol-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
 /* Table du train : première colonne en libellés, chiffres alignés à droite. */
 #train-results {
   overflow-x: auto;

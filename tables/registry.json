@@ -1,0 +1,1005 @@
+[
+  {
+    "id": "protocole",
+    "title": "Protocole du guide — étapes 1 à 6 (241-HAL-07)",
+    "kind": "formulas",
+    "groups": [
+      {
+        "name": "Étape 1 — diamètres primitifs et nombres de dents",
+        "rows": [
+          {
+            "label": "Rapport de transmission",
+            "when": "Donnée de départ du train : m_G = D_G/D_P, sert à répartir l'entraxe.",
+            "variants": [
+              {
+                "display": "m_G = D_G / D_P",
+                "tex": "m_G=\\dfrac{D_G}{D_P}",
+                "expr": "DG / DP"
+              }
+            ]
+          },
+          {
+            "label": "Entraxe",
+            "when": "Donnée de départ, vérifiée à la fin : C = (D_G + D_P)/2 (contrôle n° 2 du guide).",
+            "variants": [
+              {
+                "display": "C = (D_G + D_P) / 2",
+                "tex": "C=\\dfrac{D_G+D_P}{2}",
+                "expr": "(DG + DP) / 2"
+              }
+            ]
+          },
+          {
+            "label": "Diamètre primitif du pignon",
+            "when": "Premier calcul du train : mène aux nombres de dents.",
+            "variants": [
+              {
+                "display": "D_P = 2C / (m_G + 1)",
+                "tex": "D_P=\\dfrac{2C}{m_G+1}",
+                "expr": "2 * C / (mG + 1)"
+              }
+            ]
+          },
+          {
+            "label": "Diamètre primitif de la roue",
+            "when": "Se déduit du pignon par le rapport : D_G = m_G × D_P.",
+            "variants": [
+              {
+                "display": "D_G = m_G × D_P",
+                "tex": "D_G=m_G\\times D_P",
+                "expr": "mG * DP"
+              }
+            ]
+          },
+          {
+            "label": "Nombre de dents",
+            "when": "Après l'entraxe : N doit être entier, sinon les données sont incohérentes.",
+            "variants": [
+              {
+                "display": "N = P × D",
+                "tex": "N=P\\times D",
+                "expr": "P * D"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Étape 2 — denture normalisée",
+        "rows": [
+          {
+            "label": "Diamètre extérieur",
+            "when": "Avant la taille : diamètre de la pièce à tourner, D_0 = (N + 2)/P.",
+            "variants": [
+              {
+                "display": "D_0 = (N + 2) / P",
+                "tex": "D_0=\\dfrac{N+2}{P}",
+                "expr": "(N + 2) / P"
+              },
+              {
+                "display": "D_0 = D + 2a",
+                "tex": "D_0=D+2a",
+                "expr": "D + 2 * a"
+              }
+            ]
+          },
+          {
+            "label": "Saillie (addendum)",
+            "when": "Hauteur de dent au-dessus du primitif : a = 1/P.",
+            "variants": [
+              {
+                "display": "a = 1 / P",
+                "tex": "a=\\dfrac{1}{P}",
+                "expr": "1 / P"
+              }
+            ]
+          },
+          {
+            "label": "Creux (dedendum)",
+            "when": "Seul terme qui dépend de l'angle : 1,157/P à 14½°, 1,250/P à 20°.",
+            "variants": [
+              {
+                "display": "b = 1,157 / P (14½°)",
+                "tex": "b=\\dfrac{1{,}157}{P}",
+                "expr": "1.157 / P"
+              },
+              {
+                "display": "b = 1,250 / P (20°)",
+                "tex": "b=\\dfrac{1{,}250}{P}",
+                "expr": "1.25 / P"
+              }
+            ]
+          },
+          {
+            "label": "Pas circulaire",
+            "when": "Pour l'épaisseur de dent et le contrôle au vernier.",
+            "variants": [
+              {
+                "display": "p = π / P",
+                "tex": "p=\\dfrac{\\pi}{P}",
+                "expr": "pi / P"
+              }
+            ]
+          },
+          {
+            "label": "Épaisseur circulaire",
+            "when": "Épaisseur de dent sur l'arc primitif : t = p/2.",
+            "variants": [
+              {
+                "display": "t = p / 2",
+                "tex": "t=\\dfrac{p}{2}",
+                "expr": "p / 2"
+              }
+            ]
+          },
+          {
+            "label": "Épaisseur à la corde",
+            "when": "Pour mesurer la dent au vernier à engrenage (corde, pas arc).",
+            "variants": [
+              {
+                "display": "T = D sin(90°/N)",
+                "tex": "T=D\\sin\\dfrac{90^\\circ}{N}",
+                "expr": "D * sin(90 / N)"
+              }
+            ]
+          },
+          {
+            "label": "Saillie à la corde",
+            "when": "Avec T : hauteur de la pige du vernier au-dessus de la corde.",
+            "variants": [
+              {
+                "display": "H = a + (D/2)(1 − cos 90°/N)",
+                "tex": "H=a+\\dfrac{D}{2}\\left(1-\\cos\\dfrac{90^\\circ}{N}\\right)",
+                "expr": "a + D / 2 * (1 - cos(90 / N))"
+              }
+            ]
+          },
+          {
+            "label": "Profondeur totale",
+            "when": "Profondeur de passe de la fraise : h_t = a + b.",
+            "variants": [
+              {
+                "display": "h_t = a + b",
+                "tex": "h_t=a+b",
+                "expr": "a + b"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Étape 4 — piges",
+        "rows": [
+          {
+            "label": "Diamètre de pige",
+            "when": "Choix des piges pour une denture extérieure : W = 1,728/P.",
+            "variants": [
+              {
+                "display": "W = 1,728 / P",
+                "tex": "W=\\dfrac{1{,}728}{P}",
+                "expr": "1.728 / P"
+              }
+            ]
+          },
+          {
+            "label": "Fonction involute de l'angle de contact",
+            "when": "Étape intermédiaire : on cherche l'angle α dont l'involute vaut cette valeur.",
+            "variants": [
+              {
+                "display": "inv α = inv φ + W/(D cos φ) − π/(2N)",
+                "tex": "\\operatorname{inv}\\alpha=\\operatorname{inv}\\varphi+\\dfrac{W}{D\\cos\\varphi}-\\dfrac{\\pi}{2N}",
+                "expr": "tan(phi) - phi * pi / 180 + 1.728 / (P * D * cos(phi)) - pi / (2 * N)"
+              }
+            ]
+          },
+          {
+            "label": "Mesure sur piges (nombre pair de dents)",
+            "when": "Calcul de secours ; en examen, on lit la table de piges et on divise par P.",
+            "variants": [
+              {
+                "display": "M = D cos φ / cos α + W",
+                "tex": "M=\\dfrac{D\\cos\\varphi}{\\cos\\alpha}+W",
+                "expr": "D * cos(phi) / cos(alpha) + 1.728 / P"
+              }
+            ]
+          },
+          {
+            "label": "Mesure sur piges (nombre impair de dents)",
+            "when": "Même mesure quand N est impair : les piges ne sont pas diamétralement opposées.",
+            "variants": [
+              {
+                "display": "M = D cos φ cos(90°/N) / cos α + W",
+                "tex": "M=\\dfrac{D\\cos\\varphi\\,\\cos\\frac{90^\\circ}{N}}{\\cos\\alpha}+W",
+                "expr": "D * cos(phi) * cos(90 / N) / cos(alpha) + 1.728 / P"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Étape 5 — jeu fonctionnel",
+        "rows": [
+          {
+            "label": "Sensibilité ΔM",
+            "when": "Variation de M par 0,001 po d'épaisseur en moins ; sert aux trois lignes suivantes.",
+            "variants": [
+              {
+                "display": "ΔM = 0,001 cos φ / sin α",
+                "tex": "\\Delta M=0{,}001\\,\\dfrac{\\cos\\varphi}{\\sin\\alpha}",
+                "expr": "0.001 * cos(phi) / sin(alpha)"
+              }
+            ]
+          },
+          {
+            "label": "M maxi (roue amincie)",
+            "when": "Quand le jeu est porté par la roue : M_th − 3ΔM.",
+            "variants": [
+              {
+                "display": "M maxi = M_th − 3ΔM",
+                "tex": "M_{max}=M_{th}-3\\,\\Delta M",
+                "expr": "Mth - 3 * dM"
+              }
+            ]
+          },
+          {
+            "label": "M mini (roue amincie)",
+            "when": "Limite basse de la roue : M_th − 5ΔM (jeu 0,003 + tolérance 0,002).",
+            "variants": [
+              {
+                "display": "M mini = M_th − 5ΔM",
+                "tex": "M_{min}=M_{th}-5\\,\\Delta M",
+                "expr": "Mth - 5 * dM"
+              }
+            ]
+          },
+          {
+            "label": "M mini (pignon intact)",
+            "when": "Le pignon n'est pas aminci : seule la tolérance de 0,002 s'applique, M_th − 2ΔM.",
+            "variants": [
+              {
+                "display": "M mini = M_th − 2ΔM",
+                "tex": "M_{min}=M_{th}-2\\,\\Delta M",
+                "expr": "Mth - 2 * dM"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Étape 6 — mesure entre dents",
+        "rows": [
+          {
+            "label": "Mesure entre dents",
+            "when": "Contrôle au pied à coulisse sur k dents (k lu dans la Table 11).",
+            "variants": [
+              {
+                "display": "M = cos φ [(k − 0,5)π + N inv φ] / P",
+                "tex": "M=\\dfrac{\\cos\\varphi\\,[(k-0{,}5)\\pi+N\\operatorname{inv}\\varphi]}{P}",
+                "expr": "cos(phi) * ((k - 0.5) * pi + N * (tan(phi) - phi * pi / 180)) / P"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table3",
+    "title": "Table 3 — American National Standard, pas grossier",
+    "file": "Table 3. Gear Tooth Parts for American National Standard Coarse Pitch.csv",
+    "lookup": "P",
+    "columns": {
+      "P": "Dia. Pitch P",
+      "p": "Circ. Pitch p",
+      "a": "Stand. Addendum a",
+      "b": "Stand. Dedendum b",
+      "bSpec": "Spec. Dedendum b",
+      "bMin": "Min. Dedendum b",
+      "rf": "Stand. F. Rad. rf",
+      "rfMin": "Min. F. Rad. rf"
+    },
+    "labels": {
+      "P": "P — pas diamétral",
+      "p": "p — pas circulaire",
+      "a": "a — addendum",
+      "b": "b — creux",
+      "bSpec": "b — creux spécial",
+      "bMin": "b — creux minimal",
+      "rf": "rf — rayon de raccordement",
+      "rfMin": "rf — rayon minimal"
+    }
+  },
+  {
+    "id": "table5",
+    "title": "Table 5 — American National Standard, pas fin (14½°, 20°, 25°)",
+    "file": "Table 5. American National Standard Fine Pitch Standard Gear Tooth Parts.csv",
+    "lookup": "P",
+    "columns": {
+      "P": "Dia. Pitch P",
+      "p": "Circ. Pitch p",
+      "t": "Circ. Thickness t",
+      "a": "Stand. Addendum a",
+      "b": "Stand. Dedendum b",
+      "bSpec": "Special Dedendum b"
+    },
+    "labels": {
+      "P": "P — pas diamétral",
+      "p": "p — pas circulaire",
+      "t": "t — épaisseur circulaire",
+      "a": "a — addendum",
+      "b": "b — creux",
+      "bSpec": "b — creux spécial"
+    }
+  },
+  {
+    "id": "pins-even",
+    "title": "Tables 1-2 (piges) — nombre pair de dents (p. 2303-2304)",
+    "file": "Pin measurement - even teeth.csv",
+    "lookup": "N",
+    "columns": {
+      "N": "N",
+      "M145": "M 14.5",
+      "M175": "M 17.5",
+      "M20": "M 20",
+      "M25": "M 25",
+      "M30": "M 30"
+    },
+    "labels": {
+      "N": "N — nombre de dents",
+      "M145": "M — à 14½°",
+      "M175": "M — à 17½°",
+      "M20": "M — à 20°",
+      "M25": "M — à 25°",
+      "M30": "M — à 30°"
+    }
+  },
+  {
+    "id": "pins-odd",
+    "title": "Tables 1-2 (piges) — nombre impair de dents (p. 2305-2306)",
+    "file": "Pin measurement - odd teeth.csv",
+    "lookup": "N",
+    "columns": {
+      "N": "N",
+      "M145": "M 14.5",
+      "M175": "M 17.5",
+      "M20": "M 20",
+      "M25": "M 25",
+      "M30": "M 30"
+    },
+    "labels": {
+      "N": "N — nombre de dents",
+      "M145": "M — à 14½°",
+      "M175": "M — à 17½°",
+      "M20": "M — à 20°",
+      "M25": "M — à 25°",
+      "M30": "M — à 30°"
+    }
+  },
+  {
+    "id": "table10-145",
+    "title": "Table 10 — Mesure à la corde, 14½°, 1 pas diamétral",
+    "file": "Table 10 - Chordal M 14.5 deg.csv",
+    "lookup": "N",
+    "columns": {
+      "N": "Number of Teeth",
+      "M": "M in Inches for 1 D.P."
+    },
+    "labels": {
+      "N": "N — nombre de dents",
+      "M": "M — 1 pas diamétral"
+    }
+  },
+  {
+    "id": "table10-20",
+    "title": "Table 10 — Mesure à la corde, 20°, 1 pas diamétral",
+    "file": "Table 10 - Chordal M 20 deg.csv",
+    "lookup": "N",
+    "columns": {
+      "N": "Number of Teeth",
+      "M": "M in Inches for 1 D.P."
+    },
+    "labels": {
+      "N": "N — nombre de dents",
+      "M": "M — 1 pas diamétral"
+    }
+  },
+  {
+    "id": "table1",
+    "title": "Table 1 — Formules des dimensions (p. 2212)",
+    "kind": "formulas",
+    "groups": [
+      {
+        "name": "Formules de base",
+        "rows": [
+          {
+            "label": "Diamètre du cercle de base",
+            "variants": [
+              {
+                "display": "DB = D cos φ",
+                "expr": "D * cos(phi)",
+                "tex": "D_B = D\\cos\\varphi"
+              }
+            ],
+            "when": "Pour tracer la développante ou vérifier la longueur de flanc ; ne sert pas à la taille."
+          },
+          {
+            "label": "Pas circulaire",
+            "variants": [
+              {
+                "display": "p = 3,1416 D / N",
+                "expr": "3.1416 * D / N",
+                "tex": "p=\\frac{3{,}1416\\,D}{N}"
+              },
+              {
+                "display": "p = 3,1416 / P",
+                "expr": "3.1416 / P",
+                "tex": "p=\\frac{3{,}1416}{P}"
+              }
+            ],
+            "when": "Dès que P est connu : contrôle de l'avance et de l'épaisseur de dent."
+          },
+          {
+            "label": "Entraxe",
+            "variants": [
+              {
+                "display": "C = N_P (m_G + 1) / (2P)",
+                "expr": "NP * (mG + 1) / (2 * P)",
+                "tex": "C=\\frac{N_P\\,(m_G+1)}{2P}"
+              },
+              {
+                "display": "C = (D_P + D_G) / 2",
+                "expr": "(DP + DG) / 2",
+                "tex": "C=\\frac{D_P+D_G}{2}"
+              },
+              {
+                "display": "C = (N_G + N_P) / (2P)",
+                "expr": "(NG + NP) / (2 * P)",
+                "tex": "C=\\frac{N_G+N_P}{2P}"
+              },
+              {
+                "display": "C = (N_G + N_P) p / 6,2832",
+                "expr": "(NG + NP) * p / 6.2832",
+                "tex": "C=\\frac{(N_G+N_P)\\,p}{6{,}2832}"
+              }
+            ],
+            "when": "Après les diamètres primitifs, pour vérifier la donnée de départ : C = (D_G + D_P)/2."
+          },
+          {
+            "label": "Pas diamétral",
+            "variants": [
+              {
+                "display": "P = 3,1416 / p",
+                "expr": "3.1416 / p",
+                "tex": "P=\\frac{3{,}1416}{p}"
+              },
+              {
+                "display": "P = N / D",
+                "expr": "N / D",
+                "tex": "P=\\frac{N}{D}"
+              },
+              {
+                "display": "P = N_P (m_G + 1) / (2C)",
+                "expr": "NP * (mG + 1) / (2 * C)",
+                "tex": "P=\\frac{N_P\\,(m_G+1)}{2C}"
+              }
+            ],
+            "when": "Donnée de départ du train, ou déduite du pas circulaire mesuré."
+          },
+          {
+            "label": "Rapport d'engrenage",
+            "variants": [
+              {
+                "display": "m_G = N_G / N_P",
+                "expr": "NG / NP",
+                "tex": "m_G=\\frac{N_G}{N_P}"
+              }
+            ],
+            "when": "Donnée de départ : m_G = N_G/N_P, sert à répartir l'entraxe entre pignon et roue."
+          },
+          {
+            "label": "Nombre de dents",
+            "variants": [
+              {
+                "display": "N = P × D",
+                "expr": "P * D",
+                "tex": "N=P\\times D"
+              },
+              {
+                "display": "N = 3,1416 D / p",
+                "expr": "3.1416 * D / p",
+                "tex": "N=\\frac{3{,}1416\\,D}{p}"
+              }
+            ],
+            "when": "Après le diamètre primitif : N doit être un entier, sinon les données sont incohérentes."
+          },
+          {
+            "label": "Diamètre extérieur (pleine profondeur)",
+            "variants": [
+              {
+                "display": "DO = (N + 2) / P",
+                "expr": "(N + 2) / P",
+                "tex": "D_0=\\frac{N+2}{P}"
+              },
+              {
+                "display": "DO = (N + 2) p / 3,1416",
+                "expr": "(N + 2) * p / 3.1416",
+                "tex": "D_0=\\frac{(N+2)\\,p}{3{,}1416}"
+              }
+            ],
+            "when": "Avant la taille : c'est le diamètre de la pièce à tourner (D + 2a)."
+          },
+          {
+            "label": "Diamètre extérieur (American Standard Stub)",
+            "variants": [
+              {
+                "display": "DO = (N + 1,6) / P",
+                "expr": "(N + 1.6) / P",
+                "tex": "D_0=\\frac{N+1{,}6}{P}"
+              },
+              {
+                "display": "DO = (N + 1,6) p / 3,1416",
+                "expr": "(N + 1.6) * p / 3.1416",
+                "tex": "D_0=\\frac{(N+1{,}6)\\,p}{3{,}1416}"
+              }
+            ],
+            "when": "Seulement pour une denture trapue (stub), pas pour la denture commune du cours."
+          },
+          {
+            "label": "Diamètre extérieur",
+            "variants": [
+              {
+                "display": "DO = D + 2a",
+                "expr": "D + 2 * a",
+                "tex": "D_0=D+2a"
+              }
+            ],
+            "when": "Contrôle de la pièce avant la taille : D_0 = D + 2a."
+          },
+          {
+            "label": "Diamètre primitif",
+            "variants": [
+              {
+                "display": "D = N / P",
+                "expr": "N / P",
+                "tex": "D=\\frac{N}{P}"
+              },
+              {
+                "display": "D = N p / 3,1416",
+                "expr": "N * p / 3.1416",
+                "tex": "D=\\frac{N\\,p}{3{,}1416}"
+              }
+            ],
+            "when": "Base de tous les autres calculs : D = N/P."
+          },
+          {
+            "label": "Diamètre de pied",
+            "variants": [
+              {
+                "display": "DR = D − 2b",
+                "expr": "D - 2 * b",
+                "tex": "D_R=D-2b"
+              }
+            ],
+            "when": "Contrôle du pied de dent après la taille."
+          },
+          {
+            "label": "Profondeur totale",
+            "variants": [
+              {
+                "display": "ht = a + b",
+                "expr": "a + b",
+                "tex": "h_t=a+b"
+              }
+            ],
+            "when": "Profondeur de passe de la fraise : h_t = a + b."
+          },
+          {
+            "label": "Profondeur de travail",
+            "variants": [
+              {
+                "display": "hk = a_G + a_P",
+                "expr": "aG + aP",
+                "tex": "h_k=a_G+a_P"
+              }
+            ],
+            "when": "Hauteur réellement en prise entre deux dents."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table2",
+    "title": "Table 2 — Proportions de dent 20° et 25° (p. 2212-2213)",
+    "kind": "formulas",
+    "groups": [
+      {
+        "name": "Denture pleine profondeur, 20° et 25° (ANSI B6.1-1968)",
+        "rows": [
+          {
+            "label": "Addendum",
+            "variants": [
+              {
+                "display": "a = 1,000 ÷ P",
+                "expr": "1 / P",
+                "tex": "a=\\frac{1{,}000}{P}"
+              },
+              {
+                "display": "a = 0,3183 p",
+                "expr": "0.3183 * p",
+                "tex": "a=0{,}3183\\,p"
+              }
+            ],
+            "when": "Hauteur de dent au-dessus du primitif, à respecter au tournage."
+          },
+          {
+            "label": "Dedendum (préféré)",
+            "variants": [
+              {
+                "display": "b = 1,250 ÷ P",
+                "expr": "1.25 / P",
+                "tex": "b=\\frac{1{,}250}{P}"
+              },
+              {
+                "display": "b = 0,3979 p",
+                "expr": "0.3979 * p",
+                "tex": "b=0{,}3979\\,p"
+              }
+            ],
+            "when": "Creux de la denture 20°/25° non arasée ; à 14½°, prendre 1,157/P."
+          },
+          {
+            "label": "Dedendum (dents rasées ou rectifiées)",
+            "variants": [
+              {
+                "display": "b = 1,350 ÷ P",
+                "expr": "1.35 / P",
+                "tex": "b=\\frac{1{,}350}{P}"
+              },
+              {
+                "display": "b = 0,4297 p",
+                "expr": "0.4297 * p",
+                "tex": "b=0{,}4297\\,p"
+              }
+            ],
+            "when": "Creux quand la dent est rasée ou rectifiée : b = 1,350/P."
+          },
+          {
+            "label": "Profondeur de travail",
+            "variants": [
+              {
+                "display": "hk = 2,000 ÷ P",
+                "expr": "2 / P",
+                "tex": "h_k=\\frac{2{,}000}{P}"
+              },
+              {
+                "display": "hk = 0,6366 p",
+                "expr": "0.6366 * p",
+                "tex": "h_k=0{,}6366\\,p"
+              }
+            ],
+            "when": "Hauteur réellement en prise entre deux dents."
+          },
+          {
+            "label": "Profondeur totale (préféré)",
+            "variants": [
+              {
+                "display": "ht = 2,250 ÷ P",
+                "expr": "2.25 / P",
+                "tex": "h_t=\\frac{2{,}250}{P}"
+              },
+              {
+                "display": "ht = 0,7162 p",
+                "expr": "0.7162 * p",
+                "tex": "h_t=0{,}7162\\,p"
+              }
+            ],
+            "when": "Profondeur de passe pour une denture 20°/25° non arasée."
+          },
+          {
+            "label": "Profondeur totale (dents rasées ou rectifiées)",
+            "variants": [
+              {
+                "display": "ht = 2,350 ÷ P",
+                "expr": "2.35 / P",
+                "tex": "h_t=\\frac{2{,}350}{P}"
+              },
+              {
+                "display": "ht = 0,7480 p",
+                "expr": "0.748 * p",
+                "tex": "h_t=0{,}7480\\,p"
+              }
+            ],
+            "when": "Profondeur de passe pour une dent rasée ou rectifiée."
+          },
+          {
+            "label": "Jeu (préféré)",
+            "variants": [
+              {
+                "display": "c = 0,250 ÷ P",
+                "expr": "0.25 / P",
+                "tex": "c=\\frac{0{,}250}{P}"
+              },
+              {
+                "display": "c = 0,0796 p",
+                "expr": "0.0796 * p",
+                "tex": "c=0{,}0796\\,p"
+              }
+            ],
+            "when": "Jeu au pied de dent : vérifie le dégagement entre la dent et le creux."
+          },
+          {
+            "label": "Jeu (dents rasées ou rectifiées)",
+            "variants": [
+              {
+                "display": "c = 0,350 ÷ P",
+                "expr": "0.35 / P",
+                "tex": "c=\\frac{0{,}350}{P}"
+              },
+              {
+                "display": "c = 0,1114 p",
+                "expr": "0.1114 * p",
+                "tex": "c=0{,}1114\\,p"
+              }
+            ],
+            "when": "Jeu quand la dent est rasée ou rectifiée : c = 0,350/P."
+          },
+          {
+            "label": "Rayon de raccordement de la crémaillère",
+            "variants": [
+              {
+                "display": "rf = 0,300 ÷ P",
+                "expr": "0.3 / P",
+                "tex": "r_f=\\frac{0{,}300}{P}"
+              },
+              {
+                "display": "rf = 0,0955 p",
+                "expr": "0.0955 * p",
+                "tex": "r_f=0{,}0955\\,p"
+              }
+            ],
+            "when": "Forme du pied de dent de la fraise ; contrôle du congé."
+          },
+          {
+            "label": "Diamètre primitif",
+            "variants": [
+              {
+                "display": "D = N ÷ P",
+                "expr": "N / P",
+                "tex": "D=\\frac{N}{P}"
+              },
+              {
+                "display": "D = 0,3183 × N × p",
+                "expr": "0.3183 * N * p",
+                "tex": "D=0{,}3183\\times N\\times p"
+              }
+            ],
+            "when": "Base de tous les autres calculs : D = N/P."
+          },
+          {
+            "label": "Diamètre extérieur",
+            "variants": [
+              {
+                "display": "DO = (N + 2) ÷ P",
+                "expr": "(N + 2) / P",
+                "tex": "D_0=\\frac{N+2}{P}"
+              },
+              {
+                "display": "DO = 0,3183 (N + 2) p",
+                "expr": "0.3183 * (N + 2) * p",
+                "tex": "D_0=0{,}3183\\,(N+2)\\,p"
+              }
+            ],
+            "when": "Contrôle de la pièce avant la taille : D_0 = D + 2a."
+          },
+          {
+            "label": "Diamètre de pied (préféré)",
+            "variants": [
+              {
+                "display": "DR = (N − 2,5) ÷ P",
+                "expr": "(N - 2.5) / P",
+                "tex": "D_R=\\frac{N-2{,}5}{P}"
+              },
+              {
+                "display": "DR = 0,3183 (N − 2,5) p",
+                "expr": "0.3183 * (N - 2.5) * p",
+                "tex": "D_R=0{,}3183\\,(N-2{,}5)\\,p"
+              }
+            ],
+            "when": "Contrôle du pied de dent, denture non arasée."
+          },
+          {
+            "label": "Diamètre de pied (dents rasées ou rectifiées)",
+            "variants": [
+              {
+                "display": "DR = (N − 2,7) ÷ P",
+                "expr": "(N - 2.7) / P",
+                "tex": "D_R=\\frac{N-2{,}7}{P}"
+              },
+              {
+                "display": "DR = 0,3183 (N − 2,7) p",
+                "expr": "0.3183 * (N - 2.7) * p",
+                "tex": "D_R=0{,}3183\\,(N-2{,}7)\\,p"
+              }
+            ],
+            "when": "Contrôle du pied de dent après rasage ou rectification."
+          },
+          {
+            "label": "Épaisseur circulaire (de base)",
+            "variants": [
+              {
+                "display": "t = 1,5708 ÷ P",
+                "expr": "1.5708 / P",
+                "tex": "t=\\frac{1{,}5708}{P}"
+              },
+              {
+                "display": "t = p ÷ 2",
+                "expr": "p / 2",
+                "tex": "t=\\frac{p}{2}"
+              }
+            ],
+            "when": "Épaisseur de dent sur l'arc primitif : t = p/2."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table6-rack145",
+    "title": "Table 6 — Crémaillère de base 14½° (p. 2214)",
+    "kind": "formulas",
+    "groups": [
+      {
+        "name": "Denture pleine profondeur 14½° (ancienne norme américaine)",
+        "rows": [
+          {
+            "label": "Addendum",
+            "variants": [
+              {
+                "display": "a = 1,000 ÷ P",
+                "expr": "1 / P",
+                "tex": "a=\\frac{1{,}000}{P}"
+              }
+            ],
+            "when": "Hauteur de dent au-dessus du primitif, à respecter au tournage."
+          },
+          {
+            "label": "Dedendum",
+            "variants": [
+              {
+                "display": "b = 1,157 ÷ P",
+                "expr": "1.157 / P",
+                "tex": "b=\\frac{1{,}157}{P}"
+              }
+            ],
+            "when": "Creux de la crémaillère 14½° : b = 1,157/P."
+          },
+          {
+            "label": "Jeu minimal",
+            "variants": [
+              {
+                "display": "c = 0,157 ÷ P",
+                "expr": "0.157 / P",
+                "tex": "c=\\frac{0{,}157}{P}"
+              }
+            ],
+            "when": "Jeu minimal du système 14½° : c = 0,157/P."
+          },
+          {
+            "label": "Profondeur de travail",
+            "variants": [
+              {
+                "display": "hk = 2,000 ÷ P",
+                "expr": "2 / P",
+                "tex": "h_k=\\frac{2{,}000}{P}"
+              }
+            ],
+            "when": "Hauteur réellement en prise entre deux dents."
+          },
+          {
+            "label": "Profondeur totale",
+            "variants": [
+              {
+                "display": "ht = 2,157 ÷ P",
+                "expr": "2.157 / P",
+                "tex": "h_t=\\frac{2{,}157}{P}"
+              }
+            ],
+            "when": "Profondeur de passe de la fraise : h_t = a + b."
+          },
+          {
+            "label": "Épaisseur de dent (de base)",
+            "variants": [
+              {
+                "display": "t = 1,5708 ÷ P",
+                "expr": "1.5708 / P",
+                "tex": "t=\\frac{1{,}5708}{P}"
+              }
+            ],
+            "when": "Épaisseur de dent sur l'arc primitif : t = p/2."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table11-145",
+    "title": "Table 11 — Dents à enjamber, 14½° (p. 2319)",
+    "file": "Table 11 - Teeth Gauged Over 14.5 deg.csv",
+    "lookup": "N",
+    "range": {
+      "min": "Tooth Range min",
+      "max": "Tooth Range max"
+    },
+    "columns": {
+      "k": "Teeth to Gauge Over",
+      "min": "Tooth Range min",
+      "max": "Tooth Range max"
+    },
+    "labels": {
+      "k": "k — dents enjambées",
+      "min": "dents — minimum",
+      "max": "dents — maximum"
+    }
+  },
+  {
+    "id": "table11-20",
+    "title": "Table 11 — Dents à enjamber, 20° (p. 2319)",
+    "file": "Table 11 - Teeth Gauged Over 20 deg.csv",
+    "lookup": "N",
+    "range": {
+      "min": "Tooth Range min",
+      "max": "Tooth Range max"
+    },
+    "columns": {
+      "k": "Teeth to Gauge Over",
+      "min": "Tooth Range min",
+      "max": "Tooth Range max"
+    },
+    "labels": {
+      "k": "k — dents enjambées",
+      "min": "dents — minimum",
+      "max": "dents — maximum"
+    }
+  },
+  {
+    "id": "cutters-standard",
+    "title": "Série de fraises — série régulière (p. 2231)",
+    "file": "Cutters - standard series.csv",
+    "lookup": "N",
+    "range": {
+      "min": "Tooth Range min",
+      "max": "Tooth Range max"
+    },
+    "columns": {
+      "cutter": "Cutter",
+      "min": "Tooth Range min",
+      "max": "Tooth Range max"
+    },
+    "labels": {
+      "cutter": "n° — fraise",
+      "min": "dents — minimum",
+      "max": "dents — maximum"
+    }
+  },
+  {
+    "id": "cutters-half",
+    "title": "Série de fraises — demi-numéros (p. 2231)",
+    "file": "Cutters - half numbers.csv",
+    "lookup": "N",
+    "range": {
+      "min": "Tooth Range min",
+      "max": "Tooth Range max"
+    },
+    "columns": {
+      "cutter": "Cutter",
+      "min": "Tooth Range min",
+      "max": "Tooth Range max"
+    },
+    "labels": {
+      "cutter": "n° — fraise",
+      "min": "dents — minimum",
+      "max": "dents — maximum"
+    }
+  }
+]

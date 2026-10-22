@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Manuel interactif — Engrenages</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
   <header>
@@ -55,37 +55,38 @@
         <table class="grid symbols">
           <thead><tr><th>Symbole</th><th>Anglais</th><th>Français</th></tr></thead>
           <tbody>
-            <tr><td><span data-tex="m_G">m<sub>G</sub></span></td><td>Gear ratio</td><td>Rapport de transmission</td></tr>
-            <tr><td><span data-tex="C">C</span></td><td>Center distance</td><td>Entraxe</td></tr>
-            <tr><td><span data-tex="P">P</span></td><td>Diametral pitch</td><td>Pas diamétral</td></tr>
-            <tr><td><span data-tex="p">p</span></td><td>Circular pitch</td><td>Pas circulaire</td></tr>
-            <tr><td><span data-tex="N">N</span></td><td>Number of teeth</td><td>Nombre de dents</td></tr>
-            <tr><td><span data-tex="N_P">N<sub>P</sub></span></td><td>Number of teeth in pinion</td><td>Dents du pignon</td></tr>
-            <tr><td><span data-tex="N_G">N<sub>G</sub></span></td><td>Number of teeth in gear</td><td>Dents de la roue</td></tr>
-            <tr><td><span data-tex="D">D</span></td><td>Pitch diameter</td><td>Diamètre primitif</td></tr>
-            <tr><td><span data-tex="D_0">D<sub>0</sub></span></td><td>Outside diameter</td><td>Diamètre extérieur (de tête)</td></tr>
-            <tr><td><span data-tex="D_R">D<sub>R</sub></span></td><td>Root diameter</td><td>Diamètre de pied</td></tr>
-            <tr><td><span data-tex="D_B">D<sub>B</sub></span></td><td>Base circle diameter</td><td>Diamètre du cercle de base</td></tr>
-            <tr><td><span data-tex="a">a</span></td><td>Addendum</td><td>Saillie (addendum)</td></tr>
-            <tr><td><span data-tex="b">b</span></td><td>Dedendum</td><td>Creux (dedendum)</td></tr>
-            <tr><td><span data-tex="c">c</span></td><td>Clearance</td><td>Jeu</td></tr>
-            <tr><td><span data-tex="h_k">h<sub>k</sub></span></td><td>Working depth</td><td>Profondeur de travail</td></tr>
-            <tr><td><span data-tex="h_t">h<sub>t</sub></span></td><td>Whole depth</td><td>Profondeur totale</td></tr>
-            <tr><td><span data-tex="t">t</span></td><td>Circular thickness</td><td>Épaisseur circulaire</td></tr>
-            <tr><td><span data-tex="T">T</span></td><td>Chordal thickness</td><td>Épaisseur à la corde</td></tr>
-            <tr><td><span data-tex="H">H</span></td><td>Chordal addendum</td><td>Saillie à la corde</td></tr>
-            <tr><td><span data-tex="r_f">r<sub>f</sub></span></td><td>Fillet radius of basic rack</td><td>Rayon de raccordement de la crémaillère</td></tr>
-            <tr><td><span data-tex="W">W</span></td><td>Wire or pin diameter</td><td>Diamètre de pige</td></tr>
-            <tr><td><span data-tex="M">M</span></td><td>Measurement over wires</td><td>Mesure sur piges</td></tr>
-            <tr><td><span data-tex="M_{th}">M<sub>th</sub></span></td><td>Theoretical measurement over wires</td><td>Mesure théorique sur piges</td></tr>
-            <tr><td><span data-tex="\Delta M">ΔM</span></td><td>Variation of M per 0.001 in. of tooth thickness</td><td>Variation de M par 0,001 po d’épaisseur en moins</td></tr>
-            <tr><td><span data-tex="k">k</span></td><td>Number of teeth gauged over</td><td>Nombre de dents enjambées</td></tr>
-            <tr><td><span data-tex="\varphi">φ</span></td><td>Pressure angle</td><td>Angle de pression</td></tr>
-            <tr><td><span data-tex="\alpha">α</span></td><td>Contact angle at the wire</td><td>Angle de contact de la pige</td></tr>
-            <tr><td><span data-tex="\operatorname{inv}\varphi">inv φ</span></td><td>Involute function</td><td>Fonction involute</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Rapport de transmission" data-when="Rapport : se lit dans l'énoncé et répartit l'entraxe (D_P = 2C/(m_G+1))."><td><span data-tex="m_G">m<sub>G</sub></span></td><td>Gear ratio</td><td>Rapport de transmission</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Entraxe" data-when="donnée de départ ; contrôle final C = (D_G + D_P)/2."><td><span data-tex="C">C</span></td><td>Center distance</td><td>Entraxe</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Pas diamétral" data-when="donnée de départ, ou P = N/D ; pilote toutes les proportions."><td><span data-tex="P">P</span></td><td>Diametral pitch</td><td>Pas diamétral</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Pas circulaire" data-when="p = π/P, sert à l'épaisseur de dent t = p/2."><td><span data-tex="p">p</span></td><td>Circular pitch</td><td>Pas circulaire</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Nombre de dents" data-when="N = P·D, doit être entier ; choisit la fraise et k."><td><span data-tex="N">N</span></td><td>Number of teeth</td><td>Nombre de dents</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Dents du pignon" data-when="N_P = 2CP/(m_G+1)."><td><span data-tex="N_P">N<sub>P</sub></span></td><td>Number of teeth in pinion</td><td>Dents du pignon</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Dents de la roue" data-when="N_G = m_G·N_P."><td><span data-tex="N_G">N<sub>G</sub></span></td><td>Number of teeth in gear</td><td>Dents de la roue</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Diamètre primitif" data-when="D = N/P, base de tous les autres calculs."><td><span data-tex="D">D</span></td><td>Pitch diameter</td><td>Diamètre primitif</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Diamètre extérieur (de tête)" data-when="diamètre de la pièce à tourner, D + 2a."><td><span data-tex="D_0">D<sub>0</sub></span></td><td>Outside diameter</td><td>Diamètre extérieur (de tête)</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Diamètre de pied" data-when="D − 2b, contrôle du creux après la taille."><td><span data-tex="D_R">D<sub>R</sub></span></td><td>Root diameter</td><td>Diamètre de pied</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Diamètre du cercle de base" data-when="Diamètre de base : D cos φ, pour tracer la développante."><td><span data-tex="D_B">D<sub>B</sub></span></td><td>Base circle diameter</td><td>Diamètre du cercle de base</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Saillie (addendum)" data-when="Saillie : 1/P, hauteur de dent au-dessus du primitif."><td><span data-tex="a">a</span></td><td>Addendum</td><td>Saillie (addendum)</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Creux (dedendum)" data-when="Creux : 1,157/P à 14½°, 1,250/P à 20°."><td><span data-tex="b">b</span></td><td>Dedendum</td><td>Creux (dedendum)</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Jeu" data-when="b − a, dégagement au pied de dent."><td><span data-tex="c">c</span></td><td>Clearance</td><td>Jeu</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Profondeur de travail" data-when="a_G + a_P, hauteur réellement en prise."><td><span data-tex="h_k">h<sub>k</sub></span></td><td>Working depth</td><td>Profondeur de travail</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Profondeur totale" data-when="a + b, profondeur de passe de la fraise."><td><span data-tex="h_t">h<sub>t</sub></span></td><td>Whole depth</td><td>Profondeur totale</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Épaisseur circulaire" data-when="p/2, mesurée sur l'arc primitif."><td><span data-tex="t">t</span></td><td>Circular thickness</td><td>Épaisseur circulaire</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Épaisseur à la corde" data-when="D sin(90/N), pour le vernier à engrenage."><td><span data-tex="T">T</span></td><td>Chordal thickness</td><td>Épaisseur à la corde</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Saillie à la corde" data-when="a + (D/2)(1 − cos 90/N), avec T."><td><span data-tex="H">H</span></td><td>Chordal addendum</td><td>Saillie à la corde</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Rayon de raccordement de la crémaillère" data-when="0,300/P."><td><span data-tex="r_f">r<sub>f</sub></span></td><td>Fillet radius of basic rack</td><td>Rayon de raccordement de la crémaillère</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Diamètre de pige" data-when="1,728/P, pour la mesure sur piges."><td><span data-tex="W">W</span></td><td>Wire or pin diameter</td><td>Diamètre de pige</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Mesure sur piges" data-when="valeur de table divisée par P."><td><span data-tex="M">M</span></td><td>Measurement over wires</td><td>Mesure sur piges</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Mesure théorique sur piges" data-when="Mesure théorique : valeur de table avant application du jeu."><td><span data-tex="M_{th}">M<sub>th</sub></span></td><td>Theoretical measurement over wires</td><td>Mesure théorique sur piges</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Variation de M par 0,001 po d’épaisseur en moins" data-when="Sensibilité : variation de M par 0,001 po d'épaisseur en moins."><td><span data-tex="\Delta M">ΔM</span></td><td>Variation of M per 0.001 in. of tooth thickness</td><td>Variation de M par 0,001 po d’épaisseur en moins</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Nombre de dents enjambées" data-when="Dents enjambées : lu dans la Table 11 selon N et φ."><td><span data-tex="k">k</span></td><td>Number of teeth gauged over</td><td>Nombre de dents enjambées</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Angle de pression" data-when="14½° ou 20°, change le creux et les tables."><td><span data-tex="\varphi">φ</span></td><td>Pressure angle</td><td>Angle de pression</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Angle de contact de la pige" data-when="angle où la pige touche le flanc."><td><span data-tex="\alpha">α</span></td><td>Contact angle at the wire</td><td>Angle de contact de la pige</td></tr>
+            <tr class="symbol-row" tabindex="0" role="button" data-label="Fonction involute" data-when="tan φ − φ, sert aux formules de piges et d'entre-dents."><td><span data-tex="\operatorname{inv}\varphi">inv φ</span></td><td>Involute function</td><td>Fonction involute</td></tr>
           </tbody>
         </table>
       </div>
+      <p id="symbol-use" class="message" hidden></p>
     </section>
 
     <section class="card">
@@ -100,6 +101,7 @@
         <table class="grid" id="pitch-table"></table>
       </div>
       <div id="formula-list" class="formula-list" hidden></div>
+      <p id="formula-use" class="message" hidden></p>
     </section>
   </main>
 
@@ -135,10 +137,10 @@
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
     onload="window.renderAllMath && window.renderAllMath()"></script>
   <script src="math.js?v=1"></script>
-  <script src="calculs.js?v=4"></script>
-  <script src="tables_embedded.js?v=8"></script>
-  <script src="tables.js?v=7"></script>
-  <script src="app.js?v=9"></script>
+  <script src="calculs.js?v=5"></script>
+  <script src="tables_embedded.js?v=9"></script>
+  <script src="tables.js?v=8"></script>
+  <script src="app.js?v=11"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="ocr_table.js"></script>
   <script src="ocr.js"></script>

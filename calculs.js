@@ -78,6 +78,17 @@
     return D * ca * Math.cos(Math.PI / (2 * N)) / Math.cos(phi) + W;
   }
 
+  /*
+   * Angle de contact de la pige (guide §6.4, formule 12 puis 13), en degrés.
+   * inv α = inv φ + W/(D cos φ) − π/(2N). Sert à ΔM et au calcul de secours de M.
+   */
+  function contactAngle(diametralPitch, teeth, pressureAngleDeg) {
+    var a = pressureAngleDeg * Math.PI / 180;
+    var D = teeth / diametralPitch;
+    var inv = Math.tan(a) - a + (1.728 / diametralPitch) / (D * Math.cos(a)) - Math.PI / (2 * teeth);
+    return inverseInvolute(inv) * 180 / Math.PI;
+  }
+
   // Nombre de dents à enjamber (Table 11 du M.H. / tableau 8 du guide).
   function teethOver(teeth, pressureAngleDeg) {
     var bands = pressureAngleDeg === 20 ?
@@ -201,6 +212,7 @@
     gearItems: gearItems,
     calculateTrain: calculateTrain,
     pinMeasurement: pinMeasurement,
+    contactAngle: contactAngle,
     deltaM: deltaM,
     overTeethMeasurement: overTeethMeasurement,
     teethOver: teethOver,

@@ -16,6 +16,9 @@
     tableQueryRow: document.getElementById("table-query-row"),
     tableQueryText: document.getElementById("table-query-text"),
     formulaList: document.getElementById("formula-list"),
+    formulaUse: document.getElementById("formula-use"),
+    symbolTable: document.querySelector("table.symbols"),
+    symbolUse: document.getElementById("symbol-use"),
     tableWrap: document.getElementById("table-wrap"),
     pitchTable: document.getElementById("pitch-table")
   };
@@ -150,6 +153,7 @@
       loadReference(value.slice(5));
     }
     els.tableFound.hidden = true;
+    els.formulaUse.hidden = true;
     els.tableQuery.value = "";
   }
 
@@ -181,6 +185,8 @@
         "<th>Valeur</th></tr></thead><tbody>";
       group.rows.forEach(function (row) {
         var first = true;
+        var attrs = ' class="formula-row" tabindex="0" role="button" data-label="' +
+          escapeHtml(row.label) + '" data-when="' + escapeHtml(row.when || "") + '"';
         row.variants.forEach(function (variant) {
           var value = "—";
           var reason = "calcule d'abord un engrenage";
@@ -194,7 +200,7 @@
           var cell = tex
             ? '<span data-tex="' + escapeHtml(tex) + '">' + escapeHtml(variant.display) + "</span>"
             : escapeHtml(variant.display);
-          html += "<tr><th>" + (first ? escapeHtml(row.label) : "") + "</th><td>" + cell +
+          html += "<tr" + attrs + "><th>" + (first ? escapeHtml(row.label) : "") + "</th><td>" + cell +
             '</td><td class="value"' + (reason ? ' title="' + escapeHtml(reason) + '"' : "") +
             ">" + value + "</td></tr>";
           first = false;
@@ -309,7 +315,11 @@
       DP: result.pinionPitchDiameter, DG: result.gearPitchDiameter,
       N: result.pinionTeeth, D: result.pinionPitchDiameter,
       a: 1 / P, b: dedendum, aG: 1 / P, aP: 1 / P,
-      ht: 1 / P + dedendum, hk: 2 / P, c: dedendum - 1 / P
+      ht: 1 / P + dedendum, hk: 2 / P, c: dedendum - 1 / P,
+      alpha: Calculs.contactAngle(P, result.pinionTeeth, angle),
+      Mth: result.pinion.pinMeasurement,
+      dM: result.pinion.deltaM,
+      k: result.pinion.overTeeth
     });
     if (state.table && state.table.kind === "formulas") renderFormulaTable(state.table);
     var html = "<thead><tr><th>Item</th><th>Pignon</th><th>Roue</th></tr></thead><tbody>";
@@ -356,6 +366,32 @@
     if (event.key === "Enter") { event.preventDefault(); searchTable(); }
   });
   els.tableSelect.addEventListener("change", function () { showTable(els.tableSelect.value); });
+
+  // Ligne de formule ou de symbole : un clic (ou Entrée) dit quand l'utiliser.
+  function showUse(row, target) {
+    var when = row.getAttribute("data-when") || "";
+    if (!when) return;
+    target.className = "message";
+    target.textContent = (row.getAttribute("data-label") || "") + " — " + when;
+    target.hidden = false;
+  }
+
+  function useHandler(target) {
+    return function (event) {
+      var row = event.target.closest("tr[data-when]");
+      if (!row) return;
+      if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
+      if (event.type === "keydown") event.preventDefault();
+      showUse(row, target);
+    };
+  }
+
+  els.formulaList.addEventListener("click", useHandler(els.formulaUse));
+  els.formulaList.addEventListener("keydown", useHandler(els.formulaUse));
+  if (els.symbolTable) {
+    els.symbolTable.addEventListener("click", useHandler(els.symbolUse));
+    els.symbolTable.addEventListener("keydown", useHandler(els.symbolUse));
+  }
 
   Tables.load().then(function (result) {
     state.tables = result.tables;
