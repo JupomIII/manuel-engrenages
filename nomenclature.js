@@ -1,105 +1,121 @@
 (function () {
   "use strict";
-
   var NS = "http://www.w3.org/2000/svg";
-
-  // Termes cliqués sur le schéma, avec leur formule (pouces ; P = pas diamétral, N = dents).
   var TERMS = {
-    pitch: { name: "Cercle primitif (Dp)", formula: "Dp = N / P" },
-    outside: { name: "Diamètre extérieur (Do)", formula: "Do = (N + 2) / P" },
-    root: { name: "Diamètre de pied (Dr)", formula: "Dr = (N - 2,5) / P" },
-    base: { name: "Diamètre de base (DB)", formula: "DB = Dp × cos(φ)" },
-    circular: { name: "Pas circulaire (p)", formula: "p = π / P" },
-    thickness: { name: "Épaisseur circulaire", formula: "t = p / 2" },
-    addendum: { name: "Addendum (a)", formula: "a = 1 / P ; 0,8 / P en denture trapue (stub)" },
-    dedendum: { name: "Dedendum (b)", formula: "b = 1,157 / P (14,5°) ; 1,25 / P (20°) ; 1,35 / P (20°, arasée) ; 1 / P (trapue)" },
-    wholeDepth: { name: "Hauteur totale (ht)", formula: "ht = a + b" },
-    clearance: { name: "Jeu (clearance)", formula: "jeu = b - a (0,157/P ; 0,250/P ; 0,350/P arasée ; 0,200/P trapue)" },
-    workingDepth: { name: "Hauteur de travail (hk)", formula: "hk = 2 / P" },
-    centre: { name: "Entraxe (C)", formula: "C = (Dp pignon + Dp roue) / 2" },
-    pressure: { name: "Angle de pression (φ)", formula: "φ = 14,5° ou 20°" },
-    chordal: { name: "Épaisseur à la corde (T)", formula: "T = Dp × sin(90° / N)" },
-    chordalAdd: { name: "Saillie à la corde (H)", formula: "H = a + (Dp / 2) × (1 - cos(90° / N))" }
+    pitch: ["Cercle primitif (D)", "D = N / P"],
+    outside: ["Cercle de tête (D₀)", "D₀ = D + 2a"],
+    root: ["Cercle de pied (Dᵣ)", "Dᵣ = D − 2b"],
+    base: ["Cercle de base (Dᵦ)", "Dᵦ = D cos(φ)"],
+    circular: ["Pas circulaire (p)", "p = π / P : distance entre deux points homologues de dents voisines, sur le cercle primitif."],
+    thickness: ["Épaisseur circulaire (t)", "t = p / 2 : épaisseur théorique mesurée le long de l’arc primitif, sans amincissement."],
+    addendum: ["Saillie (a)", "a : distance radiale du cercle primitif au cercle de tête. Pour une denture standard, a = 1 / P."],
+    dedendum: ["Creux (b)", "b : distance radiale du cercle primitif au cercle de pied. Sa valeur dépend du système et de la finition."],
+    wholeDepth: ["Profondeur totale (hₜ)", "hₜ = a + b : distance radiale entre les cercles de tête et de pied."],
+    clearance: ["Jeu radial (c)", "c = b − a pour les deux roues de mêmes proportions à l’entraxe standard. Il dépend des deux pièces."],
+    workingDepth: ["Profondeur de travail (hₖ)", "hₖ = a pignon + a roue : hauteur totale des saillies des deux roues."],
+    centre: ["Entraxe (C)", "C = (D pignon + D roue) / 2 à l’entraxe standard."],
+    pressure: ["Angle de pression (φ)", "Angle entre la ligne d’action et la tangente commune aux cercles primitifs ; 14,5° ou 20° ici."],
+    chordal: ["Épaisseur à la corde (T)", "T = D sin(90° / N) : corde entre les deux flancs au cercle primitif, sans amincissement."],
+    chordalAdd: ["Saillie à la corde (H)", "H = a + D/2 × (1 − cos(90° / N)) : distance radiale de la tête à la corde T."]
   };
-
+  var host = document.getElementById("nomenclature-svg");
   var out = document.getElementById("term-formula");
-
-  function el(tag, attrs, text) {
+  if (!host || !out) return;
+  function el(tag, attrs, content) {
     var node = document.createElementNS(NS, tag);
-    Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k, attrs[k]); });
-    if (text !== undefined) node.textContent = text;
+    Object.keys(attrs || {}).forEach(function (key) { node.setAttribute(key, attrs[key]); });
+    if (content !== undefined) node.textContent = content;
     return node;
   }
-
-  // Étiquette cliquable : une flèche (ligne) et un texte, qui affiche la formule.
-  function label(svg, key, x, y, lx, ly, text) {
-    var g = el("g", { "class": "term", tabindex: "0", role: "button" });
-    g.appendChild(el("line", { x1: x, y1: y, x2: lx, y2: ly, "class": "leader" }));
-    g.appendChild(el("text", { x: lx, y: ly, "class": "term-text" }, text));
-    var show = function () {
-      out.textContent = TERMS[key].name + " : " + TERMS[key].formula;
-    };
-    g.addEventListener("click", show);
-    g.addEventListener("keydown", function (e) { if (e.key === "Enter") show(); });
-    svg.appendChild(g);
+  function svg(viewBox, description) {
+    var node = el("svg", { viewBox: viewBox, "class": "nomenclature-svg", role: "group", "aria-label": description });
+    host.appendChild(node);
+    return node;
   }
-
-  // Le dessin est placé ici ; les coordonnées sont dans un viewBox 480 × 460.
-  var svg = el("svg", { viewBox: "0 0 480 460", "class": "nomenclature-svg", role: "img",
-    "aria-label": "Nomenclature des dents d'engrenage" });
-  var host = document.getElementById("nomenclature-svg");
-  if (!host) return;
-  host.appendChild(svg);
-
-  // Contour de denture : n dents entre rayon de pied et rayon extérieur.
-  function gearOutline(cx, cy, rOut, rRoot, n) {
-    var pts = [];
-    var step = (2 * Math.PI) / n;
-    for (var i = 0; i < n; i++) {
-      var a = i * step;
-      var pts4 = [[rRoot, a], [rOut, a + step * 0.25], [rOut, a + step * 0.5], [rRoot, a + step * 0.7]];
-      pts4.forEach(function (p) {
-        pts.push((cx + p[0] * Math.cos(p[1])).toFixed(1) + "," + (cy + p[0] * Math.sin(p[1])).toFixed(1));
-      });
+  function line(parent, x1, y1, x2, y2, cls) {
+    parent.appendChild(el("line", { x1: x1, y1: y1, x2: x2, y2: y2, "class": cls }));
+  }
+  function circle(parent, x, y, r, cls) {
+    parent.appendChild(el("circle", { cx: x, cy: y, r: r, "class": cls }));
+  }
+  function text(parent, x, y, value, cls) {
+    parent.appendChild(el("text", { x: x, y: y, "class": cls }, value));
+  }
+  function path(parent, d, cls) { parent.appendChild(el("path", { d: d, "class": cls })); }
+  function dimension(parent, x, top, bottom) {
+    line(parent, x, top, x, bottom, "dimension-line");
+    line(parent, x - 5, top, x + 5, top, "dimension-line");
+    line(parent, x - 5, bottom, x + 5, bottom, "dimension-line");
+  }
+  var selected = null;
+  function label(parent, key, caption, x, y, targetX, targetY) {
+    var group = el("g", { "class": "term", tabindex: "0", role: "button", "aria-label": TERMS[key][0], "aria-pressed": "false" });
+    if (targetX !== null) {
+      group.appendChild(el("line", { x1: x - 8, y1: y - 4, x2: targetX, y2: targetY, "class": "leader" }));
+      group.appendChild(el("circle", { cx: targetX, cy: targetY, r: 2, "class": "leader-dot" }));
     }
-    return pts.join(" ");
+    group.appendChild(el("text", { x: x, y: y, "class": "term-text" }, caption));
+    function show() {
+      if (selected) { selected.setAttribute("class", "term"); selected.setAttribute("aria-pressed", "false"); }
+      group.setAttribute("class", "term is-selected");
+      group.setAttribute("aria-pressed", "true");
+      selected = group;
+      out.textContent = TERMS[key][0] + " — " + TERMS[key][1];
+    }
+    group.addEventListener("click", show);
+    group.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " ") { event.preventDefault(); show(); }
+    });
+    parent.appendChild(group);
   }
 
-  function circle(cx, cy, r, cls) {
-    return el("circle", { cx: cx, cy: cy, r: r, "class": cls });
-  }
+  // Cercles concentriques d'une roue : les traits aboutissent exactement aux cercles.
+  var wheel = svg("0 0 650 320", "Cercles de référence d'une roue dentée");
+  text(wheel, 25, 29, "01 / CERCLES DE RÉFÉRENCE", "diagram-heading");
+  var cx = 170, cy = 165;
+  circle(wheel, cx, cy, 112, "guide outside-circle");
+  circle(wheel, cx, cy, 100, "guide pitch-circle");
+  circle(wheel, cx, cy, 94, "guide base-circle");
+  circle(wheel, cx, cy, 85, "guide root-circle");
+  line(wheel, 45, cy, 295, cy, "axis");
+  line(wheel, cx, 40, cx, 290, "axis");
+  circle(wheel, cx, cy, 2.5, "center-point");
+  label(wheel, "outside", "Cercle de tête · D₀", 365, 75, cx + 112, cy);
+  label(wheel, "pitch", "Cercle primitif · D", 365, 110, cx + 100, cy);
+  label(wheel, "base", "Cercle de base · Dᵦ", 365, 145, cx + 94, cy);
+  label(wheel, "root", "Cercle de pied · Dᵣ", 365, 180, cx + 85, cy);
+  label(wheel, "circular", "Pas circulaire · p", 365, 223, null, null);
+  label(wheel, "pressure", "Angle de pression · φ", 365, 254, null, null);
+  label(wheel, "centre", "Entraxe · C", 365, 285, null, null);
 
-  var PIN = { x: 240, y: 110 };
-  var GEAR = { x: 240, y: 330 };
-
-  // Formes des deux engrenages.
-  svg.appendChild(el("polygon", { points: gearOutline(PIN.x, PIN.y, 92, 78, 12), "class": "gear-body" }));
-  svg.appendChild(el("polygon", { points: gearOutline(GEAR.x, GEAR.y, 112, 96, 16), "class": "gear-body" }));
-
-  // Cercles de référence.
-  svg.appendChild(circle(PIN.x, PIN.y, 85, "guide"));
-  svg.appendChild(circle(GEAR.x, GEAR.y, 104, "guide"));
-  svg.appendChild(circle(GEAR.x, GEAR.y, 88, "guide dashed"));
-  svg.appendChild(circle(PIN.x, PIN.y, 68, "guide dashed"));
-
-  // Axes et entraxe.
-  svg.appendChild(el("line", { x1: PIN.x, y1: 10, x2: PIN.x, y2: 450, "class": "axis" }));
-  svg.appendChild(el("line", { x1: 20, y1: 220, x2: 460, y2: 220, "class": "axis" }));
-
-  // Étiquettes cliquables (position de la ligne -> position du texte).
-  label(svg, "pitch", 300, 50, 385, 45, "Cercle primitif");
-  label(svg, "outside", 240, 18, 60, 30, "Diamètre extérieur");
-  label(svg, "root", 318, 110, 385, 170, "Diamètre de pied");
-  label(svg, "base", 175, 110, 30, 120, "Diamètre de base");
-  label(svg, "circular", 161, 409, 40, 415, "Pas circulaire");
-  label(svg, "thickness", 190, 300, 30, 300, "Épaisseur circulaire");
-  label(svg, "addendum", 340, 250, 420, 250, "Addendum");
-  label(svg, "dedendum", 355, 300, 420, 300, "Dedendum");
-  label(svg, "wholeDepth", 350, 320, 420, 340, "Hauteur totale");
-  label(svg, "clearance", 240, 220, 40, 235, "Jeu");
-  label(svg, "workingDepth", 290, 210, 380, 200, "Hauteur de travail");
-  label(svg, "centre", 330, 110, 420, 140, "Entraxe");
-  label(svg, "pressure", 120, 140, 30, 170, "Angle de pression");
-  label(svg, "chordal", 200, 390, 40, 430, "Épaisseur à la corde");
-  label(svg, "chordalAdd", 280, 390, 420, 430, "Saillie à la corde");
+  // Coupe schématique d'une dent. L'arc primitif et sa corde ont les mêmes extrémités ;
+  // a et b sont mesurés au milieu de la dent, H jusqu'à la corde et non jusqu'à l'arc.
+  var detail = svg("0 0 650 460", "Détail d'une dent : saillie, creux, arc primitif et corde");
+  text(detail, 25, 30, "02 / DÉTAIL D’UNE DENT", "diagram-heading");
+  text(detail, 25, 52, "Schéma agrandi, courbure exagérée pour la lisibilité", "diagram-note");
+  // Le cercle primitif a son centre sous la dent : ses flancs le coupent en (120,220) et (240,220).
+  path(detail, "M 91 330 Q 95 278 120 220 Q 133 175 140 105 L 220 105 Q 227 175 240 220 Q 265 278 269 330 Z", "detail-tooth");
+  line(detail, 65, 105, 295, 105, "detail-guide");
+  line(detail, 65, 330, 295, 330, "detail-guide");
+  path(detail, "M 120 220 Q 180 187.47 240 220", "detail-arc");
+  line(detail, 120, 220, 240, 220, "detail-chord");
+  // Milieu de l'arc quadratique : y = 203,735 ; la corde passe à y = 220.
+  var pitchTop = 203.735;
+  dimension(detail, 305, 105, pitchTop);
+  dimension(detail, 305, pitchTop, 330);
+  dimension(detail, 325, 105, 330);
+  dimension(detail, 345, 105, 220);
+  line(detail, 180, 105, 180, 220, "detail-centerline");
+  text(detail, 25, 91, "Tête", "diagram-note");
+  text(detail, 25, 350, "Pied", "diagram-note");
+  label(detail, "addendum", "a · Saillie", 385, 101, 305, 150);
+  label(detail, "dedendum", "b · Creux", 385, 135, 305, 267);
+  label(detail, "wholeDepth", "hₜ · Profondeur totale", 385, 169, 325, 275);
+  label(detail, "chordalAdd", "H · Saillie à la corde", 385, 203, 345, 180);
+  label(detail, "thickness", "t · Arc primitif", 385, 250, 222, 211.14);
+  label(detail, "chordal", "T · Corde", 385, 284, 225, 220);
+  label(detail, "workingDepth", "hₖ · Profondeur de travail", 370, 329, null, null);
+  label(detail, "clearance", "c · Jeu radial", 370, 362, null, null);
+  text(detail, 25, 402, "Les points de T sont les intersections des flancs avec l’arc primitif.", "diagram-note");
+  text(detail, 25, 423, "hₖ et c concernent les deux roues : sélectionner pour la définition.", "diagram-note");
 })();

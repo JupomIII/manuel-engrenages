@@ -69,17 +69,19 @@
         "rows": [
           {
             "label": "Diamètre extérieur",
-            "when": "Avant la taille : diamètre de la pièce à tourner. (N + 2)/P en pleine profondeur, (N + 1,6)/P en denture trapue.",
+            "when": "Avant la taille : diamètre de la pièce à tourner, D_0 = D + 2a.",
             "variants": [
               {
                 "display": "D_0 = (N + 2) / P",
                 "tex": "D_0=\\dfrac{N+2}{P}",
-                "expr": "(N + 2) / P"
+                "expr": "(N + 2) / P",
+                "case": "standard"
               },
               {
                 "display": "D_0 = (N + 1,6) / P (trapue)",
                 "tex": "D_0=\\dfrac{N+1{,}6}{P}",
-                "expr": "(N + 1.6) / P"
+                "expr": "(N + 1.6) / P",
+                "case": "stub"
               },
               {
                 "display": "D_0 = D + 2a",
@@ -90,43 +92,66 @@
           },
           {
             "label": "Saillie (addendum)",
-            "when": "Hauteur de dent au-dessus du primitif : a = 1/P en denture commune, 0,8/P en denture trapue (stub).",
+            "when": "Hauteur de dent au-dessus du primitif : a = 1/P ; la denture trapue prend 0,8/P.",
             "variants": [
               {
                 "display": "a = 1 / P",
                 "tex": "a=\\dfrac{1}{P}",
-                "expr": "1 / P"
+                "expr": "1 / P",
+                "case": "standard"
               },
               {
                 "display": "a = 0,8 / P (trapue)",
                 "tex": "a=\\dfrac{0{,}8}{P}",
-                "expr": "0.8 / P"
+                "expr": "0.8 / P",
+                "case": "stub"
               }
             ]
           },
           {
             "label": "Creux (dedendum)",
-            "when": "Le creux dépend de quatre facteurs : angle (1,157/P à 14½°, 1,250/P à 20°), finition (1,350/P arasée ou rectifiée), forme de denture (1,000/P trapue) et finesse du pas.",
+            "when": "Pas grossier : proportions du guide. Pas fin : Table 5 ou Table 4 du Handbook (minimum). Les valeurs tabulées sont arrondies.",
             "variants": [
               {
                 "display": "b = 1,157 / P (14½°)",
                 "tex": "b=\\dfrac{1{,}157}{P}",
-                "expr": "1.157 / P"
+                "expr": "1.157 / P",
+                "case": "14.5"
               },
               {
                 "display": "b = 1,250 / P (20°)",
                 "tex": "b=\\dfrac{1{,}250}{P}",
-                "expr": "1.25 / P"
+                "expr": "1.25 / P",
+                "case": "20"
               },
               {
                 "display": "b = 1,350 / P (20°, arasée ou rectifiée)",
                 "tex": "b=\\dfrac{1{,}350}{P}",
-                "expr": "1.35 / P"
+                "expr": "1.35 / P",
+                "case": "shaved"
+              },
+              {
+                "display": "b = b retenu (Table 5 ou formule)",
+                "tex": "b=b_{retenu}",
+                "expr": "b"
+              },
+              {
+                "display": "b = 1,200 / P + 0,002 (pas fin, minimum)",
+                "tex": "b=\\dfrac{1{,}200}{P}+0{,}002",
+                "expr": "1.2 / P + 0.002",
+                "case": "fine-formula"
+              },
+              {
+                "display": "b = 1,350 / P + 0,002 (pas fin, finition, minimum)",
+                "tex": "b=\\dfrac{1{,}350}{P}+0{,}002",
+                "expr": "1.35 / P + 0.002",
+                "case": "fine-shaved-formula"
               },
               {
                 "display": "b = 1,000 / P (trapue)",
                 "tex": "b=\\dfrac{1{,}000}{P}",
-                "expr": "1 / P"
+                "expr": "1 / P",
+                "case": "stub"
               }
             ]
           },
@@ -241,12 +266,11 @@
         "rows": [
           {
             "label": "Sensibilité ΔM",
-            "when": "Variation de M par 0,001 po d'épaisseur en moins ; sert aux trois lignes suivantes.",
+            "when": "Notes de cours p. 46–48 : ΔM est lu dans la Table 9 du Handbook puis interpolé linéairement selon le nombre de dents. Pas d'extrapolation au-delà des bornes.",
             "variants": [
               {
-                "display": "ΔM = 0,001 cos φ / sin α",
-                "tex": "\\Delta M=0{,}001\\,\\dfrac{\\cos\\varphi}{\\sin\\alpha}",
-                "expr": "0.001 * cos(phi) / sin(alpha)"
+                "display": "ΔM = interpolation de la Table 9 (par 0,001 po)",
+                "expr": "dM"
               }
             ]
           },
@@ -321,10 +345,10 @@
     "labels": {
       "P": "P — pas diamétral",
       "p": "p — pas circulaire",
-      "a": "a — addendum",
-      "b": "b — creux",
-      "bSpec": "b — creux spécial",
-      "bMin": "b — creux minimal",
+      "a": "a — addendum (1/P)",
+      "b": "b — creux standard (1,250/P)",
+      "bSpec": "b — creux spécial (1,350/P)",
+      "bMin": "b — creux minimal Table 3 (20° et 25°)",
       "rf": "rf — rayon de raccordement",
       "rfMin": "rf — rayon minimal"
     }
@@ -346,9 +370,9 @@
       "P": "P — pas diamétral",
       "p": "p — pas circulaire",
       "t": "t — épaisseur circulaire",
-      "a": "a — addendum",
-      "b": "b — creux",
-      "bSpec": "b — creux spécial"
+      "a": "a — addendum (1/P)",
+      "b": "b — creux standard (pas fin)",
+      "bSpec": "b — creux spécial (pas fin)"
     }
   },
   {
@@ -865,8 +889,257 @@
     ]
   },
   {
+    "id": "table4-fine",
+    "title": "Table 4 — Pas fin, dentures droites et hélicoïdales (p. 2216)",
+    "kind": "formulas",
+    "groups": [
+      {
+        "name": "Engrenages droits — pas diamétral P (pignon du dernier train)",
+        "rows": [
+          {
+            "label": "Saillie",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "a = 1 / P",
+                "expr": "1 / P"
+              }
+            ]
+          },
+          {
+            "label": "Creux minimal",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "b = 1,200 / P + 0,002",
+                "expr": "1.2 / P + 0.002"
+              }
+            ]
+          },
+          {
+            "label": "Profondeur de travail",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "hk = 2 / P",
+                "expr": "2 / P"
+              }
+            ]
+          },
+          {
+            "label": "Profondeur totale minimale",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "ht = 2,200 / P + 0,002",
+                "expr": "2.2 / P + 0.002"
+              }
+            ]
+          },
+          {
+            "label": "Jeu minimal standard ou finition",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "c = 0,200 / P + 0,002",
+                "expr": "0.2 / P + 0.002"
+              },
+              {
+                "display": "c = 0,350 / P + 0,002 (arasée ou rectifiée)",
+                "expr": "0.35 / P + 0.002"
+              }
+            ]
+          },
+          {
+            "label": "Épaisseur circulaire de base",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "t = 1,5708 / P",
+                "expr": "1.5708 / P"
+              }
+            ]
+          },
+          {
+            "label": "Pas circulaire",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "p = πD / N",
+                "expr": "pi * D / N"
+              },
+              {
+                "display": "p = πDP / NP",
+                "expr": "pi * DP / NP"
+              },
+              {
+                "display": "p = π / P",
+                "expr": "pi / P"
+              }
+            ]
+          },
+          {
+            "label": "Diamètres primitifs",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "d = NP / P",
+                "expr": "NP / P"
+              },
+              {
+                "display": "D = NG / P",
+                "expr": "NG / P"
+              }
+            ]
+          },
+          {
+            "label": "Diamètres extérieurs",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "d₀ = (NP + 2) / P",
+                "expr": "(NP + 2) / P"
+              },
+              {
+                "display": "D₀ = (NG + 2) / P",
+                "expr": "(NG + 2) / P"
+              }
+            ]
+          },
+          {
+            "label": "Entraxe",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "C = (NG + NP) / (2P)",
+                "expr": "(NG + NP) / (2 * P)"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Engrenages hélicoïdaux — Pn et ψ du calcul hélicoïdal, n = NP, N = NG",
+        "rows": [
+          {
+            "label": "Saillie normale",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "a = 1 / Pn",
+                "expr": "1 / Pn"
+              }
+            ]
+          },
+          {
+            "label": "Creux normal minimal",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "b = 1,200 / Pn + 0,002",
+                "expr": "1.2 / Pn + 0.002"
+              }
+            ]
+          },
+          {
+            "label": "Profondeur de travail normale",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "hk = 2 / Pn",
+                "expr": "2 / Pn"
+              }
+            ]
+          },
+          {
+            "label": "Profondeur totale normale minimale",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "ht = 2,200 / Pn + 0,002",
+                "expr": "2.2 / Pn + 0.002"
+              }
+            ]
+          },
+          {
+            "label": "Jeu minimal standard ou finition",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "c = 0,200 / Pn + 0,002",
+                "expr": "0.2 / Pn + 0.002"
+              },
+              {
+                "display": "c = 0,350 / Pn + 0,002 (arasée ou rectifiée)",
+                "expr": "0.35 / Pn + 0.002"
+              }
+            ]
+          },
+          {
+            "label": "Épaisseur normale de base",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "tn = 1,5708 / Pn",
+                "expr": "1.5708 / Pn"
+              }
+            ]
+          },
+          {
+            "label": "Pas circulaire normal",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "pn = π / Pn",
+                "expr": "pi / Pn"
+              }
+            ]
+          },
+          {
+            "label": "Diamètres primitifs",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "d = NPh / (Pn cos ψ)",
+                "expr": "NPh / (Pn * cos(psi))"
+              },
+              {
+                "display": "D = NGh / (Pn cos ψ)",
+                "expr": "NGh / (Pn * cos(psi))"
+              }
+            ]
+          },
+          {
+            "label": "Diamètres extérieurs",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "d₀ = (NPh / cos ψ + 2) / Pn",
+                "expr": "(NPh / cos(psi) + 2) / Pn"
+              },
+              {
+                "display": "D₀ = (NGh / cos ψ + 2) / Pn",
+                "expr": "(NGh / cos(psi) + 2) / Pn"
+              }
+            ]
+          },
+          {
+            "label": "Entraxe",
+            "when": "Table 4 : pas fin, dimensions en pouces ; cotes normales pour les hélicoïdales. Les creux et jeux sont des minima.",
+            "variants": [
+              {
+                "display": "C = (NGh + NPh) / (2 Pn cos ψ)",
+                "expr": "(NGh + NPh) / (2 * Pn * cos(psi))"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "table6-rack145",
-    "title": "Table 6 — Crémaillère de base 14½° (p. 2214)",
+    "title": "Table 6 — Anciennes proportions 14½° et stub 20° (p. 2218)",
     "kind": "formulas",
     "groups": [
       {
@@ -879,6 +1152,10 @@
                 "display": "a = 1,000 ÷ P",
                 "expr": "1 / P",
                 "tex": "a=\\frac{1{,}000}{P}"
+              },
+              {
+                "display": "a = 0,3183 × p",
+                "expr": "0.3183 * p"
               }
             ],
             "when": "Hauteur de dent au-dessus du primitif, à respecter au tournage."
@@ -890,6 +1167,10 @@
                 "display": "b = 1,157 ÷ P",
                 "expr": "1.157 / P",
                 "tex": "b=\\frac{1{,}157}{P}"
+              },
+              {
+                "display": "b = 0,3683 × p",
+                "expr": "0.3683 * p"
               }
             ],
             "when": "Creux de la crémaillère 14½° : b = 1,157/P."
@@ -901,6 +1182,10 @@
                 "display": "c = 0,157 ÷ P",
                 "expr": "0.157 / P",
                 "tex": "c=\\frac{0{,}157}{P}"
+              },
+              {
+                "display": "c = 0,05 × p",
+                "expr": "0.05 * p"
               }
             ],
             "when": "Jeu minimal du système 14½° : c = 0,157/P."
@@ -912,6 +1197,10 @@
                 "display": "hk = 2,000 ÷ P",
                 "expr": "2 / P",
                 "tex": "h_k=\\frac{2{,}000}{P}"
+              },
+              {
+                "display": "hk = 0,6366 × p",
+                "expr": "0.6366 * p"
               }
             ],
             "when": "Hauteur réellement en prise entre deux dents."
@@ -923,6 +1212,10 @@
                 "display": "ht = 2,157 ÷ P",
                 "expr": "2.157 / P",
                 "tex": "h_t=\\frac{2{,}157}{P}"
+              },
+              {
+                "display": "ht = 0,6866 × p",
+                "expr": "0.6866 * p"
               }
             ],
             "when": "Profondeur de passe de la fraise : h_t = a + b."
@@ -934,9 +1227,102 @@
                 "display": "t = 1,5708 ÷ P",
                 "expr": "1.5708 / P",
                 "tex": "t=\\frac{1{,}5708}{P}"
+              },
+              {
+                "display": "t = 0,5 × p",
+                "expr": "0.5 * p"
               }
             ],
             "when": "Épaisseur de dent sur l'arc primitif : t = p/2."
+          }
+        ]
+      },
+      {
+        "name": "Denture stub 20° (ancienne norme américaine)",
+        "rows": [
+          {
+            "label": "Addendum",
+            "when": "Ancienne norme américaine ASA B6.1-1932, denture stub 20° : creux, profondeur totale et jeu sont des minima.",
+            "variants": [
+              {
+                "display": "a = 0,800 / P",
+                "expr": "0.8 / P"
+              },
+              {
+                "display": "a = 0,2546 × p",
+                "expr": "0.2546 * p"
+              }
+            ]
+          },
+          {
+            "label": "Dedendum minimal",
+            "when": "Ancienne norme américaine ASA B6.1-1932, denture stub 20° : creux, profondeur totale et jeu sont des minima.",
+            "variants": [
+              {
+                "display": "b = 1,000 / P",
+                "expr": "1 / P"
+              },
+              {
+                "display": "b = 0,3183 × p",
+                "expr": "0.3183 * p"
+              }
+            ]
+          },
+          {
+            "label": "Profondeur de travail",
+            "when": "Ancienne norme américaine ASA B6.1-1932, denture stub 20° : creux, profondeur totale et jeu sont des minima.",
+            "variants": [
+              {
+                "display": "hk = 1,600 / P",
+                "expr": "1.6 / P"
+              },
+              {
+                "display": "hk = 0,5092 × p",
+                "expr": "0.5092 * p"
+              }
+            ]
+          },
+          {
+            "label": "Profondeur totale minimale",
+            "when": "Ancienne norme américaine ASA B6.1-1932, denture stub 20° : creux, profondeur totale et jeu sont des minima.",
+            "variants": [
+              {
+                "display": "ht = 1,800 / P",
+                "expr": "1.8 / P"
+              },
+              {
+                "display": "ht = 0,5729 × p",
+                "expr": "0.5729 * p"
+              }
+            ]
+          },
+          {
+            "label": "Épaisseur de base",
+            "when": "Ancienne norme américaine ASA B6.1-1932, denture stub 20° : creux, profondeur totale et jeu sont des minima.",
+            "variants": [
+              {
+                "display": "t = 1,5708 / P",
+                "expr": "1.5708 / P"
+              },
+              {
+                "display": "t = 0,500 × p",
+                "expr": "0.5 * p"
+              }
+            ]
+          },
+          {
+            "label": "Jeu minimal",
+            "when": "Ancienne norme américaine ASA B6.1-1932, denture stub 20° : creux, profondeur totale et jeu sont des minima.",
+            "variants": [
+              {
+                "display": "c = 0,200 / P",
+                "expr": "0.2 / P"
+              },
+              {
+                "display": "c = 0,0637 × p",
+                "expr": "0.0637 * p"
+              }
+            ]
           }
         ]
       }

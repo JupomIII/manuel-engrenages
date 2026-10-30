@@ -19,6 +19,9 @@
   var tables = [];
   var byId = {};
   var context = {};
+  // Cas de denture du dernier train ("standard", "14.5", "shaved", "stub") :
+  // une variante de formule porte un cas, on la met en avant s'il est actif.
+  var cases = [];
 
   function parseCsv(text) {
     var lines = text.replace(/^\uFEFF/, "").split(/\r?\n/).filter(function (line) {
@@ -155,7 +158,12 @@
               label: row.label,
               when: row.when || "",
               variants: (row.variants || []).map(function (variant) {
-                return { display: variant.display, expr: variant.expr || "", tex: variant.tex || "" };
+                return {
+                  display: variant.display,
+                  expr: variant.expr || "",
+                  tex: variant.tex || "",
+                  case: variant.case || ""
+                };
               })
             };
           })
@@ -233,7 +241,7 @@
     return { tables: tables, errors: errors };
   }
 
-  // Ligne de la table dont la clé est la plus proche de value (tolérance 0.0005),
+  // Ligne de la table dont la clé est égale à value (tolérance numérique),
   // ou dont l'intervalle contient value.
   function findRow(table, value) {
     var best = null;
@@ -251,7 +259,7 @@
       var gap = Math.abs(num(row[at]) - value);
       if (gap < bestGap) { bestGap = gap; best = row; }
     });
-    return bestGap <= 0.0005 ? best : null;
+    return bestGap <= 1e-9 ? best : null;
   }
 
   function valuesOf(table, row) {
@@ -291,8 +299,13 @@
   // Valeurs connues des calculs en cours, utilisées pour évaluer les formules.
   function setContext(values) {
     Object.keys(values || {}).forEach(function (key) {
-      if (isFinite(values[key])) context[key] = values[key];
+      context[key] = values[key];
     });
+  }
+
+  // Cas actifs du dernier train : les variantes des autres cas sont écartées.
+  function setCases(list) {
+    cases = (list || []).slice();
   }
 
   global.Tables = {
@@ -303,6 +316,14 @@
     getAll: function () { return tables; },
     getById: function (id) { return byId[id] || null; },
     setContext: setContext,
-    getContext: function () { return context; }
+    clearContext: function () { context = {}; },
+    clearSpurContext: function () {
+      var helical = { Pn: context.Pn, psi: context.psi, NPh: context.NPh, NGh: context.NGh };
+      context = {};
+      Object.keys(helical).forEach(function (key) { if (isFinite(helical[key])) context[key] = helical[key]; });
+    },
+    getContext: function () { return context; },
+    setCases: setCases,
+    getCases: function () { return cases; }
   };
 })(window);
